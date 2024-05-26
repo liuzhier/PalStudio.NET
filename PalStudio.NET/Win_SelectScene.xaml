@@ -1,0 +1,77 @@
+﻿<Window x:Class="PalStudio.NET.Win_SelectScene"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PalStudio.NET"
+        mc:Ignorable="d"
+        Title="PalStudio.NET" Icon="/Resources/LOGO.ICO" WindowStyle="None"
+        SnapsToDevicePixels="True" WindowStartupLocation="CenterScreen"
+        Height="550" Width="750" MinHeight="550" MinWidth="750"
+        MaxHeight="{x:Static SystemParameters.MaximizedPrimaryScreenHeight}"
+        MaxWidth="{x:Static SystemParameters.MaximizedPrimaryScreenWidth}" Loaded="Window_Loaded">
+    <Window.Resources>
+        <Style TargetType="{x:Type Border}">
+            <Setter Property="BorderBrush" Value="#1d1d1d" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style TargetType="{x:Type Image}">
+            <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor" />
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <DockPanel LastChildFill="True">
+            <local:UtilCtrl_Win_ToolsButton x:Name="Win_ToolsButton" DockPanel.Dock="Top" Loaded="Win_ToolsButton_Loaded" />
+            <Border>
+                <DockPanel LastChildFill="True">
+                    <Border DockPanel.Dock="Bottom" BorderThickness="2, 0, 0, 0">
+                        <DockPanel LastChildFill="True" Height="139">
+                            <Border DockPanel.Dock="Right" BorderThickness="1">
+                                <DockPanel LastChildFill="True" Width="180">
+                                    <Border DockPanel.Dock="Top" BorderThickness="0, 0, 0, 2">
+                                        <DockPanel LastChildFill="True" Height="80" Background="DodgerBlue">
+                                            <Label x:Name="ThisSceneNum_Label" HorizontalAlignment="Center" VerticalAlignment="Center" DockPanel.Dock="Top" FontSize="14" Foreground="Yellow">
+                                                未选择
+                                            </Label>
+                                            <TextBlock x:Name="ThisSceneName_TextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" DockPanel.Dock="Top" TextWrapping="Wrap" FontSize="14" Foreground="LightYellow">
+                                            ------------
+                                            </TextBlock>
+                                        </DockPanel>
+                                    </Border>
+                                    <DockPanel LastChildFill="True" Height="55">
+                                        <Button x:Name="EnterScene_Button" IsEnabled="False" Click="EnterScene_Button_Click">确定</Button>
+                                    </DockPanel>
+                                </DockPanel>
+                            </Border>
+                            <DockPanel LastChildFill="True" DockPanel.Dock="Right">
+                                <DockPanel LastChildFill="True" DockPanel.Dock="Top" Background="MistyRose">
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                                        <Border BorderThickness="0, 0, 1, 0">
+                                            <DockPanel x:Name="SceneNameList_DockPanel" LastChildFill="False" MouseDown="SceneNameList_DockPanel_MouseDown">
+                                                
+                                            </DockPanel>
+                                        </Border>
+                                    </ScrollViewer>
+                                </DockPanel>
+                            </DockPanel>
+                        </DockPanel>
+                    </Border>
+                    <DockPanel x:Name="MapViewportBox_DockPanel" LastChildFill="True" DockPanel.Dock="Bottom">
+                        <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
+                            <ScrollViewer Background="Black" HorizontalScrollBarVisibility="Visible">
+                                <Image x:Name="MapViewport_Image" Width="2064" Height="2055" />
+                            </ScrollViewer>
+                        </Border>
+                        <DockPanel x:Name="Tip_NotSelected_DockPanel" LastChildFill="True" Background="HotPink">
+                            <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="36" Foreground="Thistle">
+                                (lll￢ω￢)......
+                                <LineBreak />
+                                啊哈...您还未选择任何场景呦～
+                            </TextBlock>
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </Border>
+        </DockPanel>
+    </Grid>
+</Window>

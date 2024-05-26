@@ -1,1 +1,1 @@
-# PalStudio.NET
+docs/README.md

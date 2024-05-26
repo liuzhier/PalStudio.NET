@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="PalStudio.NET.UtilCtrl_ItemList_Item"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PalStudio.NET"
+             mc:Ignorable="d" 
+             d:DesignHeight="NaN" d:DesignWidth="NaN">
+    <Grid>
+        <DockPanel LastChildFill="False" MouseDown="DockPanel_MouseDown">
+            <Border x:Name="Background_Border" DockPanel.Dock="Top" BorderBrush="DeepPink" BorderThickness="1" Background="Pink" Margin="5">
+                <DockPanel LastChildFill="True">
+                    <Label x:Name="Item_Text" DockPanel.Dock="Top" FontSize="16" Foreground="MediumVioletRed" VerticalAlignment="Center">
+                        [0x----] -----: ？？？？？？？？？？？？？？？？？？？？？？？？
+                    </Label>
+                </DockPanel>
+            </Border>
+        </DockPanel>
+    </Grid>
+</UserControl>
