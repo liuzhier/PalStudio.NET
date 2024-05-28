@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 using BOOL      = System.Boolean;
 using CHAR      = System.Char;
@@ -31,6 +32,7 @@ using PalGlobal;
 using PalCfg;
 using PalVideo;
 using PalMap;
+using PalResources;
 
 using static PalGlobal.Pal_Global;
 using static PalGlobal.Pal_File;
@@ -40,7 +42,7 @@ using static PalConfig.Pal_Config;
 using static PalCfg.Pal_Cfg;
 using static PalVideo.Pal_Video;
 using static PalMap.Pal_Map;
-using System.Text.RegularExpressions;
+using static PalResources.Pal_Resources;
 
 namespace PalStudio.NET
 {
@@ -53,8 +55,6 @@ namespace PalStudio.NET
         private static  BOOL        m_fCanClose = FALSE, m_fIsLoadingCompleted = FALSE;
         private static  Surface     m_Surface;
 
-        public  static  INT         m_iStartEvent   = -1;
-        public  static  INT         m_iEndEvent     = -1;
         public  static  dynamic[,]  m_AllSceneData;
 
         public Win_SelectScene()
@@ -182,8 +182,12 @@ namespace PalStudio.NET
         {
             DockPanel       dockPanel = sender as DockPanel;
             INT             x, y, h, iPosX = 0, iPosY = 0, iThisScene, iNodeIndex, iOffset = 0;
-            BYTE[]          Map_Tmp = null, Data_Buf = null;
+            WORD            wSpriteNum, wDirection, wDirectionFrames, wCurrentFrameNum;
+            SHORT           sSpriteLayer, sSpriteActualLayer;
+            BYTE[]          Map_Tmp = null, Data_Buf = null, tmp_bySprite;
             Pal_Map_Tile    pmtThisTile;
+            Pal_Object      poEvent;
+            Pal_Resources   tmpResources;
 
             if (dockPanel       != NULL &&
                 dockPanel.Tag   != NULL)
@@ -214,9 +218,9 @@ namespace PalStudio.NET
                     //
                     // 获取 <地图编号>，当前选定场景的事件数
                     //
-                    Pal_Map.m_iMapNum   = m_AllSceneData[m_iThisScene,      Pal_Cfg_GetCfgNodeItemIndex(lpszScene, lpszMapID)];
-                    m_iStartEvent       = m_AllSceneData[m_iThisScene,      iNodeIndex];
-                    m_iEndEvent         = m_AllSceneData[m_iThisScene + 1,  iNodeIndex];
+                    Pal_Map.m_iMapNum       = m_AllSceneData[m_iThisScene,      Pal_Cfg_GetCfgNodeItemIndex(lpszScene, lpszMapID)];
+                    Pal_Map.m_iStartEvent   = m_AllSceneData[m_iThisScene,      iNodeIndex];
+                    Pal_Map.m_iEndEvent     = m_AllSceneData[m_iThisScene + 1,  iNodeIndex];
 
                     //
                     // 初始化 <Map> 数据
@@ -250,9 +254,9 @@ namespace PalStudio.NET
                                     pmtTitle                = new Pal_Map_Tile();
 
                                     pmtTitle.fIsNoPassBlock = (Data_Buf[iOffset + 1] & 0x20) != 0;
-                                    pmtTitle.LowTile_Num    = (SHORT)(Data_Buf[iOffset++] | (((Data_Buf[iOffset] & 0x10) >> 4) << 8));
+                                    pmtTitle.LowTile_Num    = (WORD)(Data_Buf[iOffset++] | (((Data_Buf[iOffset] & 0x10) >> 4) << 8));
                                     pmtTitle.LowTile_Layer  = (BYTE)(Data_Buf[iOffset++] & 0xF);
-                                    pmtTitle.HighTile_Num   = (SHORT)((Data_Buf[iOffset++] | (((Data_Buf[iOffset] & 0x10) >> 4) << 8)) - 1);
+                                    pmtTitle.HighTile_Num   = (WORD)((Data_Buf[iOffset++] | (((Data_Buf[iOffset] & 0x10) >> 4) << 8)) - 1);
                                     pmtTitle.HighTile_Layer = (BYTE)(Data_Buf[iOffset++] & 0xF);
 
                                     Pal_Map.Tiles[y, x, h] = pmtTitle;
@@ -279,7 +283,7 @@ namespace PalStudio.NET
                     }
 
                     //
-                    // 绘制 <Map>
+                    // 绘制 <Map Low Tile>
                     //
                     {
                         for (y = 0; y < Pal_Map.Tiles.GetLength(0); y++)
@@ -291,29 +295,160 @@ namespace PalStudio.NET
                                     //
                                     // 计算当前块的 <PosX>
                                     //
-                                    iPosX = x * m_MapTileWidth;
-                                    iPosY = y * m_MapTileHeight;
+                                    iPosX = x * Pal_Map.m_MapTileWidth;
+                                    iPosY = y * Pal_Map.m_MapTileHeight;
 
                                     if (((h + 1) % 2) == 0)
                                     {
                                         //
                                         // <Half> 半块
                                         //
-                                        iPosX += wOffsetX_H;
-                                        iPosY += wOffsetY_H;
+                                        iPosX += Pal_Map.wOffsetX_H;
+                                        iPosY += Pal_Map.wOffsetY_H;
                                     }
 
                                     pmtThisTile = Pal_Map.Tiles[y, x, h];
                                     PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, pmtThisTile.LowTile_Num), m_Surface, PAL_XY(iPosX, iPosY));
-                                    PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, pmtThisTile.HighTile_Num), m_Surface, PAL_XY(iPosX, iPosY));
                                 }
                             }
                         }
+                    }
 
+                    //
+                    // 清空资源列表
+                    //
+                    Pal_Global.m_prResources.Clear();
+
+                    //
+                    // 将所有 <Map Tile> 块放入资源列表
+                    //
+                    for (y = 0; y < Pal_Map.Tiles.GetLength(0); y++)
+                    {
+                        for (x = 0; x < Pal_Map.Tiles.GetLength(1); x++)
+                        {
+                            for (h = 0; h < Pal_Map.Tiles.GetLength(2); h++)
+                            {
+                                //
+                                // 计算当前块的 <PosX>
+                                //
+                                iPosX = x * Pal_Map.m_MapTileWidth;
+                                iPosY = y * Pal_Map.m_MapTileHeight;
+
+                                if (((h + 1) % 2) == 0)
+                                {
+                                    //
+                                    // <Half> 半块
+                                    //
+                                    iPosX += Pal_Map.wOffsetX_H;
+                                    iPosY += Pal_Map.wOffsetY_H;
+                                }
+
+                                pmtThisTile = Pal_Map.Tiles[y, x, h];
+
+                                //
+                                // 将高层 <Map Tile> 放入资源列表
+                                //
+                                sSpriteActualLayer  = (SHORT)(iPosY + pmtThisTile.HighTile_Layer * 8 + 1);
+                                wSpriteNum          = pmtThisTile.HighTile_Num;
+                                tmpResources        = new Pal_Resources(PAL_SpriteGetFrame(Pal_Map.TileSprite, wSpriteNum), PAL_XY(iPosX, iPosY), sSpriteActualLayer);
+                                Pal_Global.m_prResources.Add(tmpResources);
+                            }
+                        }
+                    }
+
+                    //
+                    // 将所有 <Sprite> 块放入资源列表
+                    //
+                    {
                         //
-                        // 开始将 <Surface> 转换为 <Image>
+                        // 获取全部 <Event> 数据
                         //
-                        VIDEO_DrawSurfaceToImage(m_Surface, MapViewport_Image, Pal_Map.m_MapRect);
+                        poEvent = Pal_Global.poMainData.Where(MainItem => MainItem.TableName.Equals(lpszEvent)).First();
+
+                        for (y = Pal_Map.m_iStartEvent; y < Pal_Map.m_iEndEvent; y++)
+                        {
+                            iPosX               = poEvent.GetItem(y, lpszX);
+                            iPosY               = poEvent.GetItem(y, lpszY);
+                            sSpriteLayer        = poEvent.GetItem(y, lpszLayer);
+                            wSpriteNum          = poEvent.GetItem(y, lpszSpriteNum);
+                            wDirection          = poEvent.GetItem(y, lpszDirection);
+                            wDirectionFrames    = poEvent.GetItem(y, lpszDirectionFrames);
+                            wCurrentFrameNum    = poEvent.GetItem(y, lpszCurrentFrameNum);
+                            tmp_bySprite        = PAL_GetEventObjectSprite(wSpriteNum);
+
+                            if (tmp_bySprite == NULL) continue;
+
+                            //
+                            // <Pos Y> 绘制起点应该与 <Map Tile> 贴齐
+                            //
+                            tmp_bySprite        = PAL_SpriteGetFrame(tmp_bySprite, wDirection * wDirectionFrames + wCurrentFrameNum);
+                            sSpriteActualLayer  = (SHORT)(iPosY + sSpriteLayer * 8 + 2);
+                            iPosX              -= PAL_RLEGetWidth(tmp_bySprite) / 2;
+                            iPosY              -= PAL_RLEGetHeight(tmp_bySprite) + sSpriteLayer - 9;
+
+                            //
+                            // 因为这里地图是完全显示的，没有截掉边缘处的多余三角块
+                            // 所以要额外加上这些三角块的尺寸（其实就是偏移）
+                            //
+                            iPosX += 16;
+                            iPosY += 8;
+
+                            tmpResources    = new Pal_Resources(tmp_bySprite, PAL_XY(iPosX, iPosY), sSpriteActualLayer);
+                            Pal_Global.m_prResources.Add(tmpResources);
+                        }
+                    }
+
+                    //
+                    // 通过 <图层> 对资源列表进行排序
+                    //
+                    Pal_Global.m_prResources = Pal_Global.m_prResources.OrderBy(res => res.m_sLayer).ToList();
+
+                    //
+                    // 绘制资源列表中所有的 <Sprite> 元素
+                    //
+                    foreach (Pal_Resources tmpRes in Pal_Global.m_prResources)
+                    {
+                        PAL_RLEBlitToSurface(tmpRes.m_bySpirit, m_Surface, tmpRes.m_pos);
+                    }
+
+                    //
+                    // 开始将 <Surface> 转换为 <Image>
+                    //
+                    VIDEO_DrawSurfaceToImage(m_Surface, MapViewport_Image, Pal_Map.m_MapRect);
+
+                    //
+                    // 绘制 <障碍块>
+                    //
+                    if (FALSE)
+                    {
+                        for (y = 0; y < Pal_Map.Tiles.GetLength(0); y++)
+                        {
+                            for (x = 0; x < Pal_Map.Tiles.GetLength(1); x++)
+                            {
+                                for (h = 0; h < Pal_Map.Tiles.GetLength(2); h++)
+                                {
+                                    if (Pal_Map.Tiles[y, x, h].fIsNoPassBlock)
+                                    {
+                                        //
+                                        // 计算当前块的 <PosX>
+                                        //
+                                        iPosX = x * Pal_Map.m_MapTileWidth;
+                                        iPosY = y * Pal_Map.m_MapTileHeight;
+
+                                        if (((h + 1) % 2) == 0)
+                                        {
+                                            //
+                                            // <Half> 半块
+                                            //
+                                            iPosX += Pal_Map.wOffsetX_H;
+                                            iPosY += Pal_Map.wOffsetY_H;
+                                        }
+
+                                        DrawMapTileCursor(MapTileCursorColorType.Obstacle, MapViewport_Image, PAL_XY(iPosX, iPosY));
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     //
@@ -346,9 +481,9 @@ namespace PalStudio.NET
         {
             get
             {
-                BOOL fIsEnter   = m_iLastScene != m_iThisScene;
+                BOOL fIsEnter   = m_iLastScene != Pal_Map.m_iSceneNum;
 
-                m_iLastScene    = m_iThisScene;
+                if (Pal_Map.m_iSceneNum == m_iThisScene) m_iLastScene = m_iThisScene;
 
                 return fIsEnter;
             }

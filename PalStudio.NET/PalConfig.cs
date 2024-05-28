@@ -53,7 +53,7 @@ namespace PalConfig
         public const LPSTR  lpszState           = "State";
         public const LPSTR  lpszVanishTime      = "VanishTime";
         public const LPSTR  lpszCurrentFrameNum = "CurrentFrameNum";
-        public const LPSTR  lpszSpriteFrames    = "SpriteFrames";
+        public const LPSTR  lpszDirectionFrames = "DirectionFrames";
         public const LPSTR  lpszDirection       = "Direction";
         public const LPSTR  lpszX               = "X";
         public const LPSTR  lpszY               = "Y";

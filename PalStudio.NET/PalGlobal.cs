@@ -26,6 +26,7 @@ using PalCfg;
 using PalMain;
 using PalVideo;
 using PalUtil;
+using PalResources;
 
 using static PalGlobal.Pal_File;
 using static PalGlobal.Pal_Global;
@@ -33,6 +34,7 @@ using static PalUtil.Pal_Util;
 using static PalConfig.Pal_Config;
 using static PalCfg.Pal_Cfg;
 using static PalCommon.Pal_Common;
+using static PalResources.Pal_Resources;
 
 namespace PalGlobal
 {
@@ -286,11 +288,13 @@ namespace PalGlobal
         public static List<Pal_File>    pfFileList          = new List<Pal_File>();
         public static Pal_Object[]      poCoreData;
         public static Pal_Object[]      poMainData;
+
+        public        Pal_Video         pvMapEdit           = null;
+
         //public static INT               iThisScene          = -1;
         public static WORD              wScreenWave         = 0;
         public static SHORT             sWaveProgression    = 0;
-
-        public        Pal_Video         pvMapEdit           = null;
+        public static List<Pal_Resources>    m_prResources  = new List<Pal_Resources>();
 
         // state of event object, used by the sState field of the EVENTOBJECT struct
         public enum OBJECTSTATE

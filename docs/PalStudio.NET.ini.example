@@ -296,9 +296,9 @@
 	SHORT	State	状态	# State of this object
 	WORD	TriggerMode	互动模式	# Trigger mode
 	WORD	SpriteNum	形象编号	# Sprite ID
-	WORD	SpriteFrames	每方向帧数	# Total number of frames of the sprite
+	WORD	DirectionFrames	每方向帧数	# Total number of frames of the sprite
 	WORD	Direction	面朝方向	# Direction
-	WORD	CurrentFrameNum	当前方向	# Current frame number
+	WORD	CurrentFrameNum	当前方向的帧编号	# Current frame number
 	WORD	ScriptIdleFrame	互动脚本次数	# Count of idle frames, used by trigger script
 	WORD	SpritePtrOffset	SpritePtrOffset	# FIXME: ???
 	WORD	SpriteFramesAuto	自动脚本最大次数	# Total number of frames of the sprite, used by auto script

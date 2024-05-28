@@ -108,9 +108,21 @@ namespace PalVideo
         }
 
         public Surface
-        CleanSpirit()
+        CleanSpirit(
+            BYTE        iColorIndex = 0
+        )
         {
-            Array.Clear(pixels, 0, pixels.Length);
+            if (iColorIndex == 0)
+            {
+                Array.Clear(pixels, 0, pixels.Length);
+            }
+            else
+            {
+                for (INT i = 0; i < pixels.Length; i++)
+                {
+                    pixels[i] = iColorIndex;
+                }
+            }
 
             return this;
         }
@@ -158,13 +170,14 @@ namespace PalVideo
         VIDEO_DrawSurfaceToImage(
             Surface     surface,
             Image       dest,
-            PAL_Rect    rect
+            PAL_Rect    rect,
+            BOOL        fIsTransparent = TRUE
         )
         {
             INT             x, y, iBitPerPixel, stride, pixelOffset, iThisPixel;
             IntPtr          lpBitmapPixel;
             WriteableBitmap wbRenderer;
-            RGB             palette_RGB = new RGB();
+            RGB             palette_RGB;
             BYTE[]          pixel_RGB24 = new BYTE[3];
 
             if (dest.Source == NULL)
@@ -199,8 +212,9 @@ namespace PalVideo
             {
                 for (x = rect.X; x < rect.Width; x++)
                 {
-
+                    //
                     // 计算当前像素的内存地址
+                    //
                     pixelOffset = y * stride + x * iBitPerPixel;
 
                     //
@@ -211,7 +225,7 @@ namespace PalVideo
                     //
                     // 跳过透明像素
                     //
-                    if (iThisPixel == 0xFF) continue;
+                    if (iThisPixel == 0xFF && fIsTransparent) continue;
 
                     //
                     // 获取当前像素颜色（RGB）

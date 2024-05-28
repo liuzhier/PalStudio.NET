@@ -68,6 +68,7 @@
     <Compile Include="PalGlobal.cs" />
     <Compile Include="PalMain.cs" />
     <Compile Include="PalMap.cs" />
+    <Compile Include="PalResources.cs" />
     <Compile Include="PalUtil.cs" />
     <Compile Include="PalVideo.cs" />
     <Compile Include="PalYJ_1.cs" />

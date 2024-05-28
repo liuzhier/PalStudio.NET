@@ -47,8 +47,9 @@ namespace PalStudio.NET
             InitializeComponent();
         }
 
-        public void Init(
-            INT iMapTileIndex
+        public void
+        Init(
+            INT         iMapTileIndex
         )
         {
             this.Tag        = iMapTileIndex;
@@ -60,8 +61,9 @@ namespace PalStudio.NET
             DrawMapTileToImage();
         }
 
-        public void SetText(
-            LPSTR lpszText
+        public void
+        SetText(
+            LPSTR       lpszText
         )
         {
             //
@@ -70,8 +72,9 @@ namespace PalStudio.NET
             Item_Text.Content = lpszText;
         }
 
-        public void SetParent(
-            UIElement uieParent
+        public void
+        SetParent(
+            UIElement   uieParent
         )
         {
             //
@@ -91,10 +94,11 @@ namespace PalStudio.NET
             //
             // 开始将 <Surface> 转换为 <Image>
             //
-            VIDEO_DrawSurfaceToImage(m_Surface, MapTile_Image, Pal_Map.m_MapTileRect);
+            VIDEO_DrawSurfaceToImage(m_Surface, MapTile_Image, Pal_Map.m_MapTileRect, FALSE);
         }
 
-        private void SetBackground(
+        private void
+        SetBackground(
             SolidColorBrush scbColor
         )
         {

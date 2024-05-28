@@ -40,7 +40,8 @@ namespace PalStudio.NET
             InitializeComponent();
         }
 
-        public void SetText(
+        public void
+        SetText(
             LPSTR           lpszText
         )
         {
@@ -50,7 +51,8 @@ namespace PalStudio.NET
             Item_Text.Content = lpszText;
         }
 
-        public void SetParent(
+        public void
+        SetParent(
             UIElement       uieParent
         )
         {
@@ -60,7 +62,8 @@ namespace PalStudio.NET
             m_Parent = uieParent;
         }
 
-        private void SetBackground(
+        private void
+        SetBackground(
             SolidColorBrush scbColor
         )
         {
