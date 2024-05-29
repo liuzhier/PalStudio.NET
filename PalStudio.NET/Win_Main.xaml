@@ -211,11 +211,11 @@
                                     </DockPanel>
                                     <DockPanel x:Name="WordMapBox_DockPanel" IsEnabled="False" DockPanel.Dock="Bottom" LastChildFill="True">
                                         <DockPanel DockPanel.Dock="Left" LastChildFill="False">
-                                            <DockPanel DockPanel.Dock="Left" LastChildFill="True" Width="200">
+                                            <DockPanel DockPanel.Dock="Left" LastChildFill="True" Width="228">
                                                 <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1">
                                                     <DockPanel LastChildFill="True" Background="LightPink" Height="75">
-                                                        <DockPanel DockPanel.Dock="Right" LastChildFill="True" Width="132" Background="Black">
-                                                            <Image x:Name="ThisMapTile_Image" Width="132" Height="75" />
+                                                        <DockPanel DockPanel.Dock="Right" LastChildFill="True" Width="160" Background="Black">
+                                                            <Image x:Name="ThisMapTile_Image" Width="NaN" Height="75" />
                                                         </DockPanel>
                                                         <Border DockPanel.Dock="Right" BorderThickness="0, 0, 1, 0">
                                                             <DockPanel LastChildFill="True">

@@ -39,7 +39,7 @@ namespace PalStudio.NET
     public partial class UtilCtrl_MapTileList_Item : UserControl
     {
         private UIElement   m_Parent        = (UIElement)NULL;
-        private Surface     m_Surface       = new Surface(32, 16);
+        private Surface     m_Surface       = new Surface(Pal_Map.m_MapTileWidth, Pal_Map.m_MapTileHeight);
         private INT         m_iMapTileIndex = -1;
 
         public UtilCtrl_MapTileList_Item()

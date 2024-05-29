@@ -71,5 +71,16 @@ namespace PalResources
 
             return binEventSprite;
         }
+
+        public static List<Pal_Resources>
+        ResourcesOrderByLayer(
+            List<Pal_Resources>             list_prResources
+        )
+        {
+            //
+            // 通过 <图层> 对资源列表进行排序
+            //
+            return list_prResources.OrderBy(res => res.m_sLayer).ToList();
+        }
     }
 }

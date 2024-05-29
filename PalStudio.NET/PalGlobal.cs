@@ -73,7 +73,7 @@ namespace PalGlobal
         )
         {
             INT             i, j, iByteOffset = 0, iChunkSize, iChunkCount, iTypeSize, iDataLenght = pcnNode.pcniItems.Count;
-            PalCfgNodeItem  pcniItem, pcniChildItem;
+            PalCfgNodeItem  pcniItem;
             dynamic         data = null;
 
             TableName   = pcnNode.lpszNodeName;
@@ -294,7 +294,7 @@ namespace PalGlobal
         //public static INT               iThisScene          = -1;
         public static WORD              wScreenWave         = 0;
         public static SHORT             sWaveProgression    = 0;
-        public static List<Pal_Resources>    m_prResources  = new List<Pal_Resources>();
+        public static List<Pal_Resources>   m_prResources   = new List<Pal_Resources>();
 
         // state of event object, used by the sState field of the EVENTOBJECT struct
         public enum OBJECTSTATE
@@ -371,15 +371,14 @@ namespace PalGlobal
 
         --*/
         {
-            INT                     i, j, iByteOffset, iChunkSize;
+            INT                     i;
             List<PalCfgNodeItem>    pcniNodeItemList;
             PalCfgNode              pcnNode;
             PalCfgNode              pcnChildNode;
             PalCfgNodeItem          pcniItem;
-            PalCfgNodeItem          pcniChildItem;
             Pal_File                pfThisFile;
             LPSTR                   lpszPath;
-            BYTE[]                  dataChunk = null, dataCount = null;
+            BYTE[]                  dataChunk = null;
 
             //
             // Get the number of files

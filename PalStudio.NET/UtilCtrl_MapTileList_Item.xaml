@@ -18,7 +18,7 @@
                     <Label x:Name="Item_Text" DockPanel.Dock="Bottom" FontSize="16" Foreground="MediumVioletRed" VerticalAlignment="Center" HorizontalAlignment="Center">
                         [0x----] -----
                     </Label>
-                    <Border BorderBrush="Purple" BorderThickness="2" DockPanel.Dock="Bottom" Width="160" Height="75">
+                    <Border BorderBrush="Purple" BorderThickness="2" DockPanel.Dock="Bottom" Width="162" Height="77">
                         <Image x:Name="MapTile_Image" />
                     </Border>
                 </DockPanel>

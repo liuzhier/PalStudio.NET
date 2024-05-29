@@ -185,7 +185,7 @@ namespace PalVideo
                 //
                 // writeableBitmap 为 <NULL> 时将完全覆盖
                 //
-                dest.Source = new WriteableBitmap(surface.w, surface.h, 0, 0, PixelFormats.Rgb24, null);
+                dest.Source = new WriteableBitmap(surface.w, surface.h, 0, 0, PixelFormats.Indexed8, null);
             }
 
             //

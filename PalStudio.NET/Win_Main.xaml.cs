@@ -33,6 +33,8 @@ using static PalMain.Pal_Main;
 using static PalCommon.Pal_Common;
 using static PalVideo.Pal_Video;
 using static PalMap.Pal_Map;
+using PalGlobal;
+using PalResources;
 
 namespace PalStudio.NET
 {
@@ -43,7 +45,7 @@ namespace PalStudio.NET
     {
         private static BOOL            m_fCanClose = TRUE; 
         private static INT             m_iThisMapTile = -1;
-        private static Surface         m_Surface;
+        private static Surface         m_MapViewport_Surface;
 
         private static Win_SelectScene win_SelectScene = new Win_SelectScene();
 
@@ -94,9 +96,9 @@ namespace PalStudio.NET
             main((string[])NULL);
 
             //
-            // 初始化 <Surface>
+            // 初始化 <Map Viewport Surface>
             //
-            m_Surface = new Surface(2064, 2055);
+            m_MapViewport_Surface = new Surface(2064, 2055);
         }
 
         private void Win_ToolsButton_Loaded(object sender, RoutedEventArgs e)
@@ -129,9 +131,8 @@ namespace PalStudio.NET
 
         private void OpenScene_Button_Click(object sender, RoutedEventArgs e)
         {
-            INT                         i, x, y, h, iPosX, iPosY, nMapTiles;
+            INT                         i, nMapTiles;
             UtilCtrl_MapTileList_Item   utilCtrl_MapTileList_Item;
-            Pal_Map_Tile                pmtThisTile;
 
             //
             // 子窗口“关闭”前，禁止用户与主窗口互动
@@ -143,27 +144,6 @@ namespace PalStudio.NET
             //
             if (win_SelectScene.fIsEnterScene)
             {
-                //
-                // 初始化所有的控件
-                // 删除粉背景提示控件
-                //
-                if (MapViewport_Border.Visibility != Visibility.Visible)
-                {
-                    WordMapBox_DockPanel.IsEnabled                  = TRUE;
-                    WordMapBox_DockPanel.Opacity                    = 1;
-                    SaveMap_Button.IsEnabled                        = TRUE;
-                    SaveMap_Button.Opacity                          = 1;
-                    MapEditMode_ToolsButtonList.IsEnabled           = TRUE;
-                    MapEditMode_ToolsButtonList.Opacity             = 1;
-                    MapBlockDisplayMode_ToolsButtonList.IsEnabled   = TRUE;
-                    MapBlockDisplayMode_ToolsButtonList.Opacity     = 1;
-                    MapLayerMode_ToolsButtonList.IsEnabled          = TRUE;
-                    MapLayerMode_ToolsButtonList.Opacity            = 1;
-
-                    MapViewportBox_DockPanel.Children.Remove(Tip_NotSelected_DockPanel);
-                    MapViewport_Border.Visibility = Visibility.Visible;
-                }
-
                 //
                 // 初始化 <Map Tiles> 视图列表
                 //
@@ -198,7 +178,7 @@ namespace PalStudio.NET
                     }
 
                     //
-                    // 将第一个 <UtilCtrl_MapTileList_Item> 设为默认选中
+                    // 将首个 <UtilCtrl_MapTileList_Item> 设为默认选中
                     //
                     ((UtilCtrl_MapTileList_Item)MapTilesList_DockPanel.Children[0]).SimulateMouseDown();
 
@@ -209,75 +189,41 @@ namespace PalStudio.NET
                 }
 
                 //
-                // 绘制 <Map>
+                // 绘制资源列表中所有的 <Sprite> 元素
                 //
-                {
-                    for (y = 0; y < Pal_Map.Tiles.GetLength(0); y++)
-                    {
-                        for (x = 0; x < Pal_Map.Tiles.GetLength(1); x++)
-                        {
-                            for (h = 0; h < Pal_Map.Tiles.GetLength(2); h++)
-                            {
-                                //
-                                // 计算当前块的 <PosX>
-                                //
-                                iPosX = x * Pal_Map.m_MapTileWidth;
-                                iPosY = y * Pal_Map.m_MapTileHeight;
+                Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, m_MapViewport_Surface);
 
-                                if (((h + 1) % 2) == 0)
-                                {
-                                    //
-                                    // <Half> 半块
-                                    //
-                                    iPosX += Pal_Map.wOffsetX_H;
-                                    iPosY += Pal_Map.wOffsetY_H;
-                                }
-
-                                pmtThisTile = Pal_Map.Tiles[y, x, h];
-                                PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, pmtThisTile.LowTile_Num), m_Surface, PAL_XY(iPosX, iPosY));
-                                PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, pmtThisTile.HighTile_Num), m_Surface, PAL_XY(iPosX, iPosY));
-                            }
-                        }
-                    }
-
-                    //
-                    // 开始将 <Surface> 转换为 <Image>
-                    //
-                    VIDEO_DrawSurfaceToImage(m_Surface, MapViewport_Image, Pal_Map.m_MapRect);
-                }
+                //
+                // 开始将 <Surface> 转换为 <Image>
+                //
+                VIDEO_DrawSurfaceToImage(m_MapViewport_Surface, MapViewport_Image, Pal_Map.m_MapRect);
 
                 //
                 // 绘制 <障碍块>
                 //
+                Pal_Map.DrawObstacleBlock(MapViewport_Image);
+
+                if (MapViewport_Border.Visibility != Visibility.Visible)
                 {
-                    for (y = 0; y < Pal_Map.Tiles.GetLength(0); y++)
-                    {
-                        for (x = 0; x < Pal_Map.Tiles.GetLength(1); x++)
-                        {
-                            for (h = 0; h < Pal_Map.Tiles.GetLength(2); h++)
-                            {
-                                if (Pal_Map.Tiles[y, x, h].fIsNoPassBlock)
-                                {
-                                    //
-                                    // 计算当前块的 <PosX>
-                                    //
-                                    iPosX = x * Pal_Map.m_MapTileWidth;
-                                    iPosY = y * Pal_Map.m_MapTileHeight;
+                    //
+                    // 初始化所有的控件
+                    //
+                    WordMapBox_DockPanel.IsEnabled                  = TRUE;
+                    WordMapBox_DockPanel.Opacity                    = 1;
+                    SaveMap_Button.IsEnabled                        = TRUE;
+                    SaveMap_Button.Opacity                          = 1;
+                    MapEditMode_ToolsButtonList.IsEnabled           = TRUE;
+                    MapEditMode_ToolsButtonList.Opacity             = 1;
+                    MapBlockDisplayMode_ToolsButtonList.IsEnabled   = TRUE;
+                    MapBlockDisplayMode_ToolsButtonList.Opacity     = 1;
+                    MapLayerMode_ToolsButtonList.IsEnabled          = TRUE;
+                    MapLayerMode_ToolsButtonList.Opacity            = 1;
 
-                                    if (((h + 1) % 2) == 0)
-                                    {
-                                        //
-                                        // <Half> 半块
-                                        //
-                                        iPosX += Pal_Map.wOffsetX_H;
-                                        iPosY += Pal_Map.wOffsetY_H;
-                                    }
-
-                                    DrawMapTileCursor(MapTileCursorColorType.Obstacle, MapViewport_Image, PAL_XY(iPosX, iPosY));
-                                }
-                            }
-                        }
-                    }
+                    //
+                    // 删除粉背景提示控件
+                    //
+                    MapViewportBox_DockPanel.Children.Remove(Tip_NotSelected_DockPanel);
+                    MapViewport_Border.Visibility = Visibility.Visible;
                 }
             }
         }
