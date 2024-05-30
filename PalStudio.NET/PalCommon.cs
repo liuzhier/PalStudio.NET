@@ -191,7 +191,7 @@ namespace PalCommon
                         if (uiWidth - sx < k) k = uiWidth - sx;
 
                         sx += k;
-                        iPixelsOffset = y * lpDstSurface.pitch;
+                        iPixelsOffset = y * lpDstSurface.w;
 
                         if (bShadow)
                         {
@@ -404,7 +404,7 @@ namespace PalCommon
 
                         sx += k;
                         sx += k;
-                        iPixelsOffset = y * lpDstSurface.pitch;
+                        iPixelsOffset = y * lpDstSurface.w;
 
                         for (; k != 0; k--)
                         {
@@ -622,7 +622,7 @@ namespace PalCommon
                         if (uiWidth - sx < k) k = uiWidth - sx;
 
                         sx += k;
-                        iPixelsOffset = y * lpDstSurface.pitch;
+                        iPixelsOffset = y * lpDstSurface.w;
 
                         for (; k != 0; k--)
                         {
@@ -714,7 +714,7 @@ namespace PalCommon
             //
             for (y = 0; y < 200; y++)
             {
-                iPixOffset = y * lpDstSurface.pitch;
+                iPixOffset = y * lpDstSurface.w;
                 for (x = 0; x < 320; x++)
                 {
                     lpDstSurface.pixels[iPixOffset++] = lpBitmapFBP[iBmpOffset++];

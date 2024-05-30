@@ -59,7 +59,24 @@
                     <DockPanel x:Name="MapViewportBox_DockPanel" LastChildFill="True" DockPanel.Dock="Bottom">
                         <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
                             <ScrollViewer Background="Black" HorizontalScrollBarVisibility="Visible">
-                                <Image x:Name="MapViewport_Image" Width="2064" Height="2055" />
+                                <Canvas Width="2064" Height="2055">
+                                    <Canvas.Resources>
+                                        <Style TargetType="{x:Type Image}">
+                                            <Setter Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Setter Property="Stretch" Value="UniformToFill" />
+                                            <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor" />
+                                        </Style>
+                                    </Canvas.Resources>
+                                    <Image x:Name="MapViewport_Selected_Image" Panel.ZIndex="4" />
+                                    <Image x:Name="MapViewport_Active_Image"   Panel.ZIndex="3" />
+                                    <Image x:Name="MapViewport_Event_Image"    Panel.ZIndex="2" />
+                                    <Image x:Name="MapViewport_Obstacle_Image" Panel.ZIndex="1" />
+                                    <Image x:Name="MapViewport_Image"          Panel.ZIndex="0" />
+                                </Canvas>
                             </ScrollViewer>
                         </Border>
                         <DockPanel x:Name="Tip_NotSelected_DockPanel" LastChildFill="True" Background="HotPink">

@@ -243,7 +243,24 @@
                                         <DockPanel x:Name="MapViewportBox_DockPanel" LastChildFill="True" DockPanel.Dock="Left">
                                             <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
                                                 <ScrollViewer Background="Black" HorizontalScrollBarVisibility="Visible">
-                                                    <Image x:Name="MapViewport_Image" Width="4128" Height="4110" />
+                                                    <Canvas Width="4128" Height="4110">
+                                                        <Canvas.Resources>
+                                                            <Style TargetType="{x:Type Image}">
+                                                                <Setter Property="RenderTransform">
+                                                                    <Setter.Value>
+                                                                        <ScaleTransform ScaleX="2" ScaleY="2"/>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                                <Setter Property="Stretch" Value="UniformToFill" />
+                                                                <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor" />
+                                                            </Style>
+                                                        </Canvas.Resources>
+                                                        <Image x:Name="MapViewport_Selected_Image" Panel.ZIndex="4" />
+                                                        <Image x:Name="MapViewport_Active_Image"   Panel.ZIndex="3" />
+                                                        <Image x:Name="MapViewport_Event_Image"    Panel.ZIndex="2" />
+                                                        <Image x:Name="MapViewport_Obstacle_Image" Panel.ZIndex="1" />
+                                                        <Image x:Name="MapViewport_Image"          Panel.ZIndex="0" />
+                                                    </Canvas>
                                                 </ScrollViewer>
                                             </Border>
                                             <DockPanel x:Name="Tip_NotSelected_DockPanel" LastChildFill="True" Background="HotPink">

@@ -27,14 +27,14 @@ using LPSTR     = System.String;
 
 using PalMap;
 using PalVideo;
+using PalGlobal;
+using PalResources;
 
 using static PalGlobal.Pal_Global;
 using static PalMain.Pal_Main;
 using static PalCommon.Pal_Common;
 using static PalVideo.Pal_Video;
 using static PalMap.Pal_Map;
-using PalGlobal;
-using PalResources;
 
 namespace PalStudio.NET
 {
@@ -45,7 +45,6 @@ namespace PalStudio.NET
     {
         private static BOOL            m_fCanClose = TRUE; 
         private static INT             m_iThisMapTile = -1;
-        private static Surface         m_MapViewport_Surface;
 
         private static Win_SelectScene win_SelectScene = new Win_SelectScene();
 
@@ -95,10 +94,13 @@ namespace PalStudio.NET
             //
             main((string[])NULL);
 
+            InitMapViewportSurface();
+
             //
-            // 初始化 <Map Viewport Surface>
+            // 开始将 <Surface> 转换为 <Image>
             //
-            m_MapViewport_Surface = new Surface(2064, 2055);
+            //VIDEO_DrawSurfaceToImage(mc_sfMapTileCursor[0], MapViewport_Active_Image,   Pal_Map.m_MapTileRect);
+            //VIDEO_DrawSurfaceToImage(mc_sfMapTileCursor[1], MapViewport_Selected_Image, Pal_Map.m_MapTileRect);
         }
 
         private void Win_ToolsButton_Loaded(object sender, RoutedEventArgs e)
@@ -191,17 +193,18 @@ namespace PalStudio.NET
                 //
                 // 绘制资源列表中所有的 <Sprite> 元素
                 //
-                Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, m_MapViewport_Surface);
+                Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, Pal_Map.m_MapViewport_Surface);
 
                 //
                 // 开始将 <Surface> 转换为 <Image>
                 //
-                VIDEO_DrawSurfaceToImage(m_MapViewport_Surface, MapViewport_Image, Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Surface,             MapViewport_Image,          Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,    MapViewport_Obstacle_Image, Pal_Map.m_MapRect);
 
                 //
                 // 绘制 <障碍块>
                 //
-                Pal_Map.DrawObstacleBlock(MapViewport_Image);
+                Pal_Map.DrawObstacleBlock(MapViewport_Obstacle_Image);
 
                 if (MapViewport_Border.Visibility != Visibility.Visible)
                 {

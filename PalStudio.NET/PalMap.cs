@@ -40,6 +40,8 @@ using static PalCommon.Pal_Common;
 using static PalCfg.Pal_Cfg;
 using static PalConfig.Pal_Config;
 using static PalResources.Pal_Resources;
+using System.Windows.Input;
+using System.Reflection;
 
 namespace PalMap
 {
@@ -64,14 +66,11 @@ namespace PalMap
 
         public static readonly BYTE[,] mc_byMapTileCursorColor =
         {
-            // 活动
-            { 0x00, 0xFF, 0x00 },
-            // 选中
-            { 0x00, 0x00, 0xFF },
-            // 障碍
-            { 0xFF, 0x00, 0x00 },
-            // 事件
-            { 0x00, 0xFF, 0xFF },
+            // A     R     G     B
+            { 0xFF, 0x00, 0xFF, 0x00 }, // 活动
+            { 0xFF, 0x00, 0x00, 0xFF }, // 选中
+            { 0xFF, 0xFF, 0x00, 0x00 }, // 障碍
+            { 0xFF, 0x00, 0xFF, 0xFF }, // 事件
         };
 
         public static readonly DWORD[,] mc_dwMapTileCursor = {
@@ -98,12 +97,88 @@ namespace PalMap
 
         public static readonly PAL_Rect m_MapRect       = new PAL_Rect(0, 0, m_MapWidth, m_MapHeight);
         public static readonly PAL_Rect m_MapTileRect   = new PAL_Rect(0, 0, m_MapTileWidth, m_MapTileHeight);
+        public static Surface           m_MapViewport_Surface, m_MapViewport_Active_Surface, m_MapViewport_Selected_Surface, m_MapViewport_Obstacle_Surface, m_MapViewport_Event_Surface;
+
+        public static List<Surface>     mc_sfMapTileCursor = new List<Surface>();
 
         public static INT               m_iMapNum   = -1, m_iSceneNum = -1, m_iStartEvent = -1, m_iEndEvent = -1;
         public static Pal_Map_Tile[,,]  Tiles       = new Pal_Map_Tile[128, 64, 2];
         public static BYTE[]            TileSprite  = (BYTE[])NULL;
 
         public static dynamic[,]        m_AllSceneData;
+
+        private static void
+        InitMapTileCursor()
+        {
+            INT             iCursorType, x, y, pixelOffset;
+            Surface         surface;
+            BYTE[,]         byColor = mc_byMapTileCursorColor;
+
+            //
+            // 初始化所有的光标 <Surface>
+            //
+            for (iCursorType = 0; iCursorType < mc_byMapTileCursorColor.GetLength(1); iCursorType++)
+            {
+                surface = new Surface(Pal_Map.m_MapTileWidth, Pal_Map.m_MapTileHeight);
+
+                List<Color> colors = surface.palette.Colors.ToList();
+
+                colors.RemoveAt(0);
+                colors.Insert(0, Color.FromArgb(byColor[iCursorType, 0], byColor[iCursorType, 1], byColor[iCursorType, 2], byColor[iCursorType, 3]));
+
+                surface.palette = new BitmapPalette(colors);
+
+                for (y = 0; y < Pal_Map.m_MapTileHeight; y++)
+                {
+                    for (x = 0; x < Pal_Map.m_MapTileWidth; x++)
+                    {
+                        //
+                        // 计算当前像素的内存地址
+                        //
+                        pixelOffset = y * Pal_Map.m_MapTileWidth + x;
+
+                        //
+                        // 获取当前像素黑白值（位值）
+                        // 若为 0 则为透明色，直接跳过
+                        //
+                        if ((mc_dwMapTileCursor[y, iCursorType] & (1 << x)) == 0) continue;
+
+                        //
+                        // 设置颜色为对应色号
+                        //
+                        surface.pixels[pixelOffset] = 0;
+                    }
+                }
+
+                mc_sfMapTileCursor.Add(surface);
+            }
+        }
+
+        public static void
+        InitMapViewportSurface()
+        {
+            //
+            // 初始化 <Map Viewport Surface>
+            //
+            m_MapViewport_Active_Surface    = new Surface(Pal_Map.m_MapTileWidth,   Pal_Map.m_MapTileHeight);
+            m_MapViewport_Selected_Surface  = new Surface(Pal_Map.m_MapTileWidth,   Pal_Map.m_MapTileHeight);
+            m_MapViewport_Surface           = new Surface(Pal_Map.m_MapWidth,       Pal_Map.m_MapHeight);
+            m_MapViewport_Obstacle_Surface  = new Surface(Pal_Map.m_MapWidth,       Pal_Map.m_MapHeight);
+            m_MapViewport_Event_Surface     = new Surface(Pal_Map.m_MapWidth,       Pal_Map.m_MapHeight);
+
+            //
+            // 初始化 <Map Tile Cursor>
+            //
+            Pal_Map.InitMapTileCursor();
+
+            //
+            // 重设 <额外信息视图> 调色板
+            //
+            m_MapViewport_Active_Surface.palette    = mc_sfMapTileCursor[0].palette;
+            m_MapViewport_Selected_Surface.palette  = mc_sfMapTileCursor[1].palette;
+            m_MapViewport_Obstacle_Surface.palette  = mc_sfMapTileCursor[2].palette;
+            m_MapViewport_Event_Surface.palette     = mc_sfMapTileCursor[3].palette;
+        }
 
         public static void
         InitMap(
@@ -328,11 +403,9 @@ namespace PalMap
             PAL_POS                 pos
         )
         {
-            INT             iCursorType, x, y, iDrawEndX, iDrawEndY, iBitPerPixel, stride, pixelOffset;
-            IntPtr          lpBitmapPixel;
+            INT             iCursorType;
             WriteableBitmap wbRenderer;
-            PAL_Rect        rect        = new PAL_Rect(PAL_X(pos), PAL_Y(pos), 32, 15);
-            BYTE[]          pixel_RGB24 = new BYTE[3];
+            PAL_Rect        rect;
 
             //
             // 检查需要绘制什么类型的光标
@@ -357,78 +430,33 @@ namespace PalMap
                     break;
             }
 
+            rect = new PAL_Rect(PAL_X(pos), PAL_Y(pos), mc_sfMapTileCursor[iCursorType].w, mc_sfMapTileCursor[iCursorType].h);
+
+            if (dest.Source == NULL)
+            {
+                //
+                // writeableBitmap 为 <NULL> 时将完全覆盖
+                //
+                dest.Source = new WriteableBitmap(rect.Width, rect.Height, 0, 0, PixelFormats.Indexed8, mc_sfMapTileCursor[iCursorType].palette);
+            }
+
             //
             // 获取位图渲染器
             //
             wbRenderer = (WriteableBitmap)dest.Source;
 
             //
-            // 锁定 WriteableBitmap 的像素数据
+            // 开始绘制指定的光标 <Surface> 到指定的 <Image>
             //
-            wbRenderer.Lock();
-            lpBitmapPixel = wbRenderer.BackBuffer;
-
-            //
-            // 计算每行像素的字节长度
-            //
-            iBitPerPixel = (PixelFormats.Rgb24.BitsPerPixel + 7) / 8;
-            stride = wbRenderer.PixelWidth * iBitPerPixel;
-
-            //
-            // 获取绘制终点
-            //
-            iDrawEndX = PAL_X(pos) + 32;
-            iDrawEndY = PAL_Y(pos) + 15;
-
-            //
-            // 开始绘制
-            //
-            for (y = 0; y < 15; y++)
-            {
-                for (x = 0; x < 32; x++)
-                {
-                    //
-                    // 计算当前像素的内存地址
-                    //
-                    pixelOffset = (PAL_Y(pos) + y) * stride + (PAL_X(pos) + x) * iBitPerPixel;
-
-                    //
-                    // 获取当前像素黑白值（位值）
-                    // 若为 0 则为透明色，直接跳过
-                    //
-                    if ((mc_dwMapTileCursor[y, iCursorType] & (1 << x)) == 0) continue;
-
-                    //
-                    // 获取当前像素颜色（RGB）
-                    //
-                    pixel_RGB24[0] = mc_byMapTileCursorColor[iCursorType, 0];
-                    pixel_RGB24[1] = mc_byMapTileCursorColor[iCursorType, 1];
-                    pixel_RGB24[2] = mc_byMapTileCursorColor[iCursorType, 2];
-
-                    //
-                    // 设置当前像素颜色
-                    //
-                    Marshal.Copy(pixel_RGB24, 0, lpBitmapPixel + pixelOffset, pixel_RGB24.Length);
-                }
-            }
-
-            //
-            // 标记更新区域
-            //
-            wbRenderer.AddDirtyRect(rect);
-
-            //
-            // 解锁 WriteableBitmap 的像素数据
-            //
-            wbRenderer.Unlock();
+            wbRenderer.WritePixels(rect, mc_sfMapTileCursor[iCursorType].pixels, mc_sfMapTileCursor[iCursorType].GetStride(), 0);
         }
 
         public static void
         DrawObstacleBlock(
-            Image       MapViewport_Image
+            Image       MapViewport_Obstacle_Image
         )
         {
-            INT x, y, h, iPosX, iPosY;
+            INT         x, y, h, iPosX, iPosY;
 
             for (y = 0; y < Pal_Map.Tiles.GetLength(0); y++)
             {
@@ -453,7 +481,7 @@ namespace PalMap
                                 iPosY += Pal_Map.wOffsetY_H;
                             }
 
-                            Pal_Map.DrawMapTileCursor(MapTileCursorColorType.Obstacle, MapViewport_Image, PAL_XY(iPosX, iPosY));
+                            Pal_Map.DrawMapTileCursor(MapTileCursorColorType.Obstacle, MapViewport_Obstacle_Image, PAL_XY(iPosX, iPosY));
                         }
                     }
                 }

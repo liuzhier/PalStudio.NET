@@ -24,12 +24,17 @@ using SDWORD    = System.Int32;
 using DWORD     = System.UInt32;
 using LPSTR     = System.String;
 
+using PAL_Rect  = System.Windows.Int32Rect;
+
 using PalVideo;
 using PalMap;
 
 using static PalGlobal.Pal_Global;
 using static PalVideo.Pal_Video;
 using static PalCommon.Pal_Common;
+using System.Windows.Media.Media3D;
+using System.Security.Cryptography;
+using System.Windows.Ink;
 
 namespace PalStudio.NET
 {
@@ -94,7 +99,7 @@ namespace PalStudio.NET
             //
             // 开始将 <Surface> 转换为 <Image>
             //
-            VIDEO_DrawSurfaceToImage(m_Surface, MapTile_Image, Pal_Map.m_MapTileRect, FALSE);
+            VIDEO_DrawSurfaceToImage(m_Surface, MapTile_Image, Pal_Map.m_MapTileRect);
         }
 
         private void

@@ -215,17 +215,18 @@ namespace PalStudio.NET
                     //
                     // 绘制资源列表中所有的 <Sprite> 元素
                     //
-                    Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, m_Surface);
+                    Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, Pal_Map.m_MapViewport_Surface);
 
                     //
                     // 开始将 <Surface> 转换为 <Image>
                     //
-                    VIDEO_DrawSurfaceToImage(m_Surface, MapViewport_Image, Pal_Map.m_MapRect);
+                    VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Surface,             MapViewport_Image,          Pal_Map.m_MapRect);
+                    VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,    MapViewport_Obstacle_Image, Pal_Map.m_MapRect);
 
                     //
                     // 绘制 <障碍块>
                     //
-                    Pal_Map.DrawObstacleBlock(MapViewport_Image);
+                    Pal_Map.DrawObstacleBlock(MapViewport_Obstacle_Image);
 
                     //
                     // 删除粉背景提示控件，允许用户点击 <确认> 按钮
