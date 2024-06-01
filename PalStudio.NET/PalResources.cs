@@ -73,14 +73,14 @@ namespace PalResources
         }
 
         public static List<Pal_Resources>
-        ResourcesOrderByLayer(
+        ResourcesOrderByPosY(
             List<Pal_Resources>             list_prResources
         )
         {
             //
             // 通过 <图层> 对资源列表进行排序
             //
-            return list_prResources.OrderBy(res => res.m_sLayer).ToList();
+            return list_prResources.OrderBy(res => PAL_Y(res.m_pos)).ToList();
         }
     }
 }

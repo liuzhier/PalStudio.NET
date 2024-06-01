@@ -178,7 +178,7 @@ namespace PalStudio.NET
 
         private void SceneNameList_DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            INT             iThisScene;
+            INT             iThisScene, x, y;
             DockPanel       dockPanel = sender as DockPanel;
 
             if (dockPanel       != NULL &&
@@ -210,23 +210,29 @@ namespace PalStudio.NET
                     //
                     // 通过 <图层> 对资源列表进行排序
                     //
-                    Pal_Global.m_prResources = Pal_Resources.ResourcesOrderByLayer(Pal_Global.m_prResources);
+                    Pal_Global.m_prResources = Pal_Resources.ResourcesOrderByPosY(Pal_Global.m_prResources);
 
                     //
                     // 绘制资源列表中所有的 <Sprite> 元素
                     //
-                    Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, Pal_Map.m_MapViewport_Surface);
+                    Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, Pal_Map.m_MapViewport_Surface.CleanSpirit());
 
                     //
                     // 开始将 <Surface> 转换为 <Image>
                     //
                     VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Surface,             MapViewport_Image,          Pal_Map.m_MapRect);
                     VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,    MapViewport_Obstacle_Image, Pal_Map.m_MapRect);
+                    VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Event_Surface,       MapViewport_Event_Image,    Pal_Map.m_MapRect);
 
                     //
                     // 绘制 <障碍块>
                     //
                     Pal_Map.DrawObstacleBlock(MapViewport_Obstacle_Image);
+
+                    //
+                    // 绘制 <事件块>
+                    //
+                    Pal_Map.DrawEventBlock(MapViewport_Event_Image);
 
                     //
                     // 删除粉背景提示控件，允许用户点击 <确认> 按钮

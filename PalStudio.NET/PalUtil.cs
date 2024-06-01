@@ -17,6 +17,8 @@ using DWORD     = System.UInt32;
 using LPSTR     = System.String;
 
 using static PalGlobal.Pal_Global;
+using System.Text.RegularExpressions;
+using System.Windows.Controls;
 
 namespace PalUtil
 {
@@ -218,6 +220,38 @@ namespace PalUtil
         )
         {
             return BitConverter.ToUInt32(BitConverter.GetBytes(value), 0);
+        }
+
+        public static INT
+        UTIL_TextBoxTextIsMatch(
+            TextBox     textBox,
+        ref INT         iDataExchange
+        )
+        {
+            if (textBox         != NULL &&
+                textBox.Text    != NULL &&
+                !LPSTR.IsNullOrEmpty(textBox.Text))
+            {
+                //
+                // 判断字符串是否完全是数字
+                //
+                if (!Regex.IsMatch(textBox.Text, @"^\d+$"))
+                {
+                    //
+                    // 用户输入了无效的数值
+                    //
+                    textBox.Text = iDataExchange.ToString();
+                }
+                else
+                {
+                    //
+                    // 用户输入了有效的数值
+                    //
+                    return INT.Parse(textBox.Text);
+                }
+            }
+
+            return 0x7FFFFFFF;
         }
     }
 }

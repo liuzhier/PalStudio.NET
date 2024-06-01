@@ -261,16 +261,240 @@ namespace PalMap
             }
         }
 
+        public static BYTE[]
+        PAL_MapGetTileBitmap(
+            BYTE            x,
+            BYTE            y,
+            BYTE            h,
+            BYTE            ucLayer
+        )
+        /*++
+          Purpose:
+
+            Get the tile bitmap on the specified layer at the location (x, y, h).
+
+          Parameters:
+
+            [IN]  x - Column number of the tile.
+
+            [IN]  y - Line number in the map.
+
+            [IN]  h - Each line in the map has two lines of tiles, 0 and 1.
+                      (See map.h for details.)
+
+            [IN]  ucLayer - The layer. 0 for bottom, 1 for top.
+
+            [IN]  lpMap - Pointer to the loaded map.
+
+          Return value:
+
+            Pointer to the bitmap. NULL if failed.
+
+        --*/
+        {
+            Pal_Map_Tile    Tile;
+
+            //
+            // Check for invalid parameters.
+            //
+            if (x >= 64 || y >= 128 || h > 1) return null;
+
+            //
+            // Get the tile data of the specified location.
+            //
+            Tile = Tiles[y, x, h];
+
+            if (ucLayer == 0)
+            {
+                //
+                // Bottom layer
+                //
+                return PAL_SpriteGetFrame(TileSprite, Tile.LowTile_Num);
+            }
+            else
+            {
+                //
+                // Top layer
+                //
+                return PAL_SpriteGetFrame(TileSprite, Tile.HighTile_Num);
+            }
+        }
+
+        public static BYTE
+        PAL_MapGetTileHeight(
+            BYTE       x,
+            BYTE       y,
+            BYTE       h,
+            BYTE       ucLayer
+        )
+        /*++
+          Purpose:
+
+            Get the logical height value of the specified tile. This value is used
+            to judge whether the tile bitmap should cover the sprites or not.
+
+          Parameters:
+
+            [IN]  x - Column number of the tile.
+
+            [IN]  y - Line number in the map.
+
+            [IN]  h - Each line in the map has two lines of tiles, 0 and 1.
+                      (See map.h for details.)
+
+            [IN]  ucLayer - The layer. 0 for bottom, 1 for top.
+
+            [IN]  lpMap - Pointer to the loaded map.
+
+          Return value:
+
+            The logical height value of the specified tile.
+
+        --*/
+        {
+            Pal_Map_Tile    Tile;
+
+            //
+            // Check for invalid parameters.
+            //
+            if (y >= 128 || x >= 64 || h > 1) return 0;
+
+            Tile = Tiles[y, x, h];
+
+            if (ucLayer == 0)
+            {
+                //
+                // Bottom layer
+                //
+                return Tile.LowTile_Layer;
+            }
+            else
+            {
+                //
+                // Top layer
+                //
+                return Tile.HighTile_Layer;
+            }
+        }
+
+        public static void
+        PAL_CalcCoverTiles(
+           Pal_Resources        SpriteToDraw
+        )
+        /*++
+           Purpose:
+
+             Calculate all the tiles which may cover the specified sprite. Add the tiles
+             into our list as well.
+
+           Parameters:
+
+             [IN]  SpriteToDraw - Pal_Resources struct.
+
+           Return value:
+
+             None.
+
+        --*/
+        {
+            INT             x, y, i, l, dx = 0, dy = 0, dh = 0, iPosX, iPosY, iTileHeight;
+            SHORT           sSpriteActualLayer;
+            BYTE[]          byTile;
+            Pal_Resources   tmpResources;
+
+            INT sx      = PAL_X(SpriteToDraw.m_pos) - SpriteToDraw.m_sLayer / 2;
+            INT sy      = PAL_Y(SpriteToDraw.m_pos) - SpriteToDraw.m_sLayer;
+            INT sh      = (sx % 32 != 0) ? 1 : 0;
+
+            INT width   = PAL_RLEGetWidth(SpriteToDraw.m_bySpirit);
+            INT height  = PAL_RLEGetHeight(SpriteToDraw.m_bySpirit);
+
+            //
+            // Loop through all the tiles in the area of the sprite.
+            //
+            for (y = (sy - height - 15) / 16; y <= sy / 16; y++)
+            {
+                for (x = (sx - width / 2) / 32; x <= (sx + width / 2) / 32; x++)
+                {
+                    for (i = ((x == (sx - width / 2) / 32) ? 0 : 3); i < 5; i++)
+                    {
+                        //
+                        // Scan tiles in the following form (* = to scan):
+                        //
+                        // . . . * * * . . .
+                        //  . . . * * . . . .
+                        //
+                        switch (i)
+                        {
+                            case 0:
+                                dx = x;
+                                dy = y;
+                                dh = sh;
+                                break;
+
+                            case 1:
+                                dx = x - 1;
+                                break;
+
+                            case 2:
+                                dx = sh != 0 ? x : (x - 1);
+                                dy = sh != 0 ? (y + 1) : y;
+                                dh = 1 - sh;
+                                break;
+
+                            case 3:
+                                dx = x + 1;
+                                dy = y;
+                                dh = sh;
+                                break;
+
+                            case 4:
+                                dx = sh != 0 ? (x + 1) : x;
+                                dy = sh != 0 ? (y + 1) : y;
+                                dh = 1 - sh;
+                                break;
+                        }
+
+                        for (l = 0; l < 2; l++)
+                        {
+                            byTile      = PAL_MapGetTileBitmap((BYTE)dx, (BYTE)dy, (BYTE)dh, (BYTE)l);
+                            iTileHeight = (CHAR)PAL_MapGetTileHeight((BYTE)dx, (BYTE)dy, (BYTE)dh, (BYTE)l);
+
+                            //
+                            // Check if this tile may cover the sprites
+                            //
+                            if (byTile != null && iTileHeight > 0 && (dy + iTileHeight) * 16 + dh * 8 >= sy)
+                            {
+                                //
+                                // This tile may cover the sprite
+                                //
+                                iPosX               = dx * 32 + dh * 16 - 16;
+                                iPosY               = dy * 16 + dh * 8 + 7 + l + iTileHeight * 8;
+                                sSpriteActualLayer  = (SHORT)(iTileHeight * 8 + l);
+
+                                tmpResources = new Pal_Resources(byTile, PAL_XY(iPosX, iPosY), sSpriteActualLayer);
+                                Pal_Global.m_prResources.Add(tmpResources);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         public static void
         InitMapResources()
         {
             INT             x, y, h, iPosX = 0, iPosY = 0;
             WORD            wSpriteNum, wDirection, wDirectionFrames, wCurrentFrameNum;
-            SHORT           sSpriteLayer, sSpriteActualLayer;
+            SHORT           sSpriteLayer;
             BYTE[]          tmp_bySprite;
-            Pal_Map_Tile    pmtThisTile;
             Pal_Object      poEvent;
             Pal_Resources   tmpResources;
+
+            //
+            // 获取全部 <Event> 数据
+            //
+            poEvent = Pal_Global.poMainData.Where(MainItem => MainItem.TableName.Equals(lpszEvent)).First();
 
             //
             // 清空资源列表
@@ -278,90 +502,36 @@ namespace PalMap
             Pal_Global.m_prResources.Clear();
 
             //
-            // 将所有 <Map Tile> 块放入资源列表
-            //
-            for (y = 0; y < Pal_Map.Tiles.GetLength(0); y++)
-            {
-                for (x = 0; x < Pal_Map.Tiles.GetLength(1); x++)
-                {
-                    for (h = 0; h < Pal_Map.Tiles.GetLength(2); h++)
-                    {
-                        //
-                        // 计算当前块的 <PosX>
-                        //
-                        iPosX = x * Pal_Map.m_MapTileWidth;
-                        iPosY = y * (Pal_Map.m_MapTileHeight + 1);
-
-                        if (((h + 1) % 2) == 0)
-                        {
-                            //
-                            // <Half> 半块
-                            //
-                            iPosX += Pal_Map.wOffsetX_H;
-                            iPosY += Pal_Map.wOffsetY_H;
-                        }
-
-                        pmtThisTile = Pal_Map.Tiles[y, x, h];
-
-                        //
-                        // 将低层 <Map Tile> 放入资源列表
-                        //
-                        sSpriteActualLayer  = (SHORT)(iPosY + pmtThisTile.LowTile_Layer * 8);
-                        wSpriteNum          = pmtThisTile.LowTile_Num;
-                        tmpResources        = new Pal_Resources(PAL_SpriteGetFrame(Pal_Map.TileSprite, wSpriteNum), PAL_XY(iPosX, iPosY), sSpriteActualLayer);
-                        Pal_Global.m_prResources.Add(tmpResources);
-
-                        //
-                        // 将高层 <Map Tile> 放入资源列表
-                        //
-                        sSpriteActualLayer  = (SHORT)(iPosY + pmtThisTile.HighTile_Layer * 8 + 1);
-                        wSpriteNum          = pmtThisTile.HighTile_Num;
-                        tmpResources        = new Pal_Resources(PAL_SpriteGetFrame(Pal_Map.TileSprite, wSpriteNum), PAL_XY(iPosX, iPosY), sSpriteActualLayer);
-                        Pal_Global.m_prResources.Add(tmpResources);
-                    }
-                }
-            }
-
-            //
             // 将所有 <Sprite> 块放入资源列表
             //
+            for (y = Pal_Map.m_iStartEvent; y < Pal_Map.m_iEndEvent; y++)
             {
+                iPosX               = poEvent.GetItem(y, lpszX);
+                iPosY               = poEvent.GetItem(y, lpszY);
+                sSpriteLayer        = poEvent.GetItem(y, lpszLayer);
+                wSpriteNum          = poEvent.GetItem(y, lpszSpriteNum);
+                wDirection          = poEvent.GetItem(y, lpszDirection);
+                wDirectionFrames    = poEvent.GetItem(y, lpszDirectionFrames);
+                wCurrentFrameNum    = poEvent.GetItem(y, lpszCurrentFrameNum);
+                tmp_bySprite        = PAL_GetEventObjectSprite(wSpriteNum);
+
+                if (tmp_bySprite == NULL) continue;
+
                 //
-                // 获取全部 <Event> 数据
+                // 计算实际 <Position> 和 <Layer>
                 //
-                poEvent = Pal_Global.poMainData.Where(MainItem => MainItem.TableName.Equals(lpszEvent)).First();
+                tmp_bySprite    = PAL_SpriteGetFrame(tmp_bySprite, wDirection * wDirectionFrames + wCurrentFrameNum);
+                sSpriteLayer    = (SHORT)(sSpriteLayer * 8 + 2);
+                iPosX          -= PAL_RLEGetWidth(tmp_bySprite) / 2;
+                iPosY          += sSpriteLayer + 9;
 
-                for (y = Pal_Map.m_iStartEvent; y < Pal_Map.m_iEndEvent; y++)
-                {
-                    iPosX               = poEvent.GetItem(y, lpszX);
-                    iPosY               = poEvent.GetItem(y, lpszY);
-                    sSpriteLayer        = poEvent.GetItem(y, lpszLayer);
-                    wSpriteNum          = poEvent.GetItem(y, lpszSpriteNum);
-                    wDirection          = poEvent.GetItem(y, lpszDirection);
-                    wDirectionFrames    = poEvent.GetItem(y, lpszDirectionFrames);
-                    wCurrentFrameNum    = poEvent.GetItem(y, lpszCurrentFrameNum);
-                    tmp_bySprite        = PAL_GetEventObjectSprite(wSpriteNum);
+                tmpResources    = new Pal_Resources(tmp_bySprite, PAL_XY(iPosX, iPosY), sSpriteLayer);
+                Pal_Global.m_prResources.Add(tmpResources);
 
-                    if (tmp_bySprite == NULL) continue;
-
-                    //
-                    // 因为这里地图是完全显示的，没有截掉边缘处的多余三角块
-                    // 所以要额外加上这些三角块的尺寸（其实就是偏移）
-                    //
-                    iPosX += 16;
-                    iPosY += 8;
-
-                    //
-                    // <Pos Y> 绘制起点应该与 <Map Tile> 贴齐
-                    //
-                    tmp_bySprite        = PAL_SpriteGetFrame(tmp_bySprite, wDirection * wDirectionFrames + wCurrentFrameNum);
-                    sSpriteActualLayer  = (SHORT)(iPosY + sSpriteLayer * 8 + 2);
-                    iPosX              -= PAL_RLEGetWidth(tmp_bySprite) / 2;
-                    iPosY              -= PAL_RLEGetHeight(tmp_bySprite) + sSpriteLayer - 9 + 2;
-
-                    tmpResources        = new Pal_Resources(tmp_bySprite, PAL_XY(iPosX, iPosY), sSpriteActualLayer);
-                    Pal_Global.m_prResources.Add(tmpResources);
-                }
+                //
+                // 将所有可能盖住当前 <Event> 的 <Map Tile> 放入资源列表
+                //
+                PAL_CalcCoverTiles(Pal_Global.m_prResources.Last());
             }
         }
 
@@ -387,12 +557,66 @@ namespace PalMap
             Surface                 destSurface
         )
         {
+            INT             x, y, h, iPosX, iPosY;
+            Pal_Map_Tile    pmtThisTile;
+
+            //
+            // 先绘制一遍完整的地图
+            //
+            for (y = 0; y < Pal_Map.Tiles.GetLength(0); y++)
+            {
+                for (x = 0; x < Pal_Map.Tiles.GetLength(1); x++)
+                {
+                    for (h = 0; h < Pal_Map.Tiles.GetLength(2); h++)
+                    {
+                        //
+                        // 计算当前块的 <PosX>
+                        //
+                        iPosX = x * Pal_Map.m_MapTileWidth;
+                        iPosY = y * (Pal_Map.m_MapTileHeight + 1);
+
+                        if (((h + 1) % 2) == 0)
+                        {
+                            //
+                            // <Half> 半块
+                            //
+                            iPosX += Pal_Map.wOffsetX_H;
+                            iPosY += Pal_Map.wOffsetY_H;
+                        }
+
+                        pmtThisTile = Pal_Map.Tiles[y, x, h];
+
+                        //
+                        // 绘制低层 <Map Tile>
+                        //
+                        PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, pmtThisTile.LowTile_Num), destSurface, PAL_XY(iPosX, iPosY));
+
+                        //
+                        // 绘制高层 <Map Tile> （跳过空图像）
+                        //
+                        if ((SHORT)pmtThisTile.HighTile_Num == -1) continue;
+
+                        PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, pmtThisTile.HighTile_Num), destSurface, PAL_XY(iPosX, iPosY));
+                    }
+                }
+            }
+
             //
             // 绘制资源列表中所有的 <Sprite> 元素
             //
             foreach (Pal_Resources tmpRes in list_prResources)
             {
-                PAL_RLEBlitToSurface(tmpRes.m_bySpirit, destSurface, tmpRes.m_pos);
+                x = PAL_X(tmpRes.m_pos);
+                y = PAL_Y(tmpRes.m_pos) - PAL_RLEGetHeight(tmpRes.m_bySpirit) - tmpRes.m_sLayer;
+
+                //
+                // 因为这里地图是完全显示的，没有截掉边缘处的多余三角块
+                // 所以要额外加上这些三角块的尺寸（其实就是偏移）
+                //
+                x += 16;
+                y += 8;
+
+                PAL_RLEBlitToSurface(tmpRes.m_bySpirit, destSurface, PAL_XY(x, y));
             }
         }
 
@@ -453,7 +677,7 @@ namespace PalMap
 
         public static void
         DrawObstacleBlock(
-            Image       MapViewport_Obstacle_Image
+            Image       dest_Image
         )
         {
             INT         x, y, h, iPosX, iPosY;
@@ -481,10 +705,42 @@ namespace PalMap
                                 iPosY += Pal_Map.wOffsetY_H;
                             }
 
-                            Pal_Map.DrawMapTileCursor(MapTileCursorColorType.Obstacle, MapViewport_Obstacle_Image, PAL_XY(iPosX, iPosY));
+                            Pal_Map.DrawMapTileCursor(MapTileCursorColorType.Obstacle, dest_Image, PAL_XY(iPosX, iPosY));
                         }
                     }
                 }
+            }
+        }
+
+        public static void
+        DrawEventBlock(
+            Image       dest_Image
+        )
+        {
+            INT             i, x, y, h, iPosX, iPosY;
+            Pal_Object      poEvent;
+
+            //
+            // 获取全部 <Event> 数据
+            //
+            poEvent = Pal_Global.poMainData.Where(MainItem => MainItem.TableName.Equals(lpszEvent)).First();
+
+            //
+            // 绘制所有 <Sprite> 的映射光标块
+            //
+            for (i = Pal_Map.m_iStartEvent; i < Pal_Map.m_iEndEvent; i++)
+            {
+                iPosX   = poEvent.GetItem(i, lpszX);
+                iPosY   = poEvent.GetItem(i, lpszY);
+
+                //
+                // 计算实际 <Position> 和 <Layer>
+                //
+                //sSpriteLayer    = (SHORT)(sSpriteLayer * 8 + 2);
+                //iPosX          -= PAL_RLEGetWidth(tmp_bySprite) / 2;
+                //iPosY          += sSpriteLayer + 9;
+
+                Pal_Map.DrawMapTileCursor(MapTileCursorColorType.Event, dest_Image, PAL_XY(iPosX, iPosY));
             }
         }
     }

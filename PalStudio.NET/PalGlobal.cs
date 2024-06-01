@@ -273,27 +273,27 @@ namespace PalGlobal
         public const BOOL   TRUE  = true;
         public const BOOL   FALSE = false;
         
-        public static readonly Encoding GB2312  = Encoding.GetEncoding("GB2312");
-        public static readonly CHAR     PathDSC = (Environment.OSVersion.Platform == PlatformID.Win32NT) ? '\\' : '/';
-        public static readonly LPSTR    NewLine = Environment.NewLine;
+        public static readonly Encoding     GB2312  = Encoding.GetEncoding("GB2312");
+        public static readonly CHAR         PathDSC = (Environment.OSVersion.Platform == PlatformID.Win32NT) ? '\\' : '/';
+        public static readonly LPSTR        NewLine = Environment.NewLine;
 
-        //public static readonly LPSTR    lpszCfgName     = "PalStudio.NET.ini";
-        //public static readonly LPSTR    lpszGaemPath    = $".{PathDSC}";
-        public static readonly LPSTR    lpszCfgName     = $"F:{PathDSC}liuzhier{PathDSC}PalStudio.NET{PathDSC}docs{PathDSC}PalStudio.NET.ini.example";
-        public static readonly LPSTR    lpszGaemPath    = $"F:{PathDSC}PALDOS{PathDSC}pal";
+        //public static readonly LPSTR        lpszCfgName     = "PalStudio.NET.ini";
+        //public static readonly LPSTR        lpszGaemPath    = $".{PathDSC}";
+        public static readonly LPSTR        lpszCfgName     = $"F:{PathDSC}liuzhier{PathDSC}PalStudio.NET{PathDSC}docs{PathDSC}PalStudio.NET.ini.example";
+        public static readonly LPSTR        lpszGaemPath    = $"F:{PathDSC}PALDOS2{PathDSC}pal";
 
-        public const  INT               SIZE_Of_QWORD       = sizeof(QWORD);
+        public const  INT                   SIZE_Of_QWORD       = sizeof(QWORD);
 
-        public static BOOL              fIsRegEncode        = FALSE;
-        public static List<Pal_File>    pfFileList          = new List<Pal_File>();
-        public static Pal_Object[]      poCoreData;
-        public static Pal_Object[]      poMainData;
+        public static BOOL                  fIsRegEncode        = FALSE;
+        public static List<Pal_File>        pfFileList          = new List<Pal_File>();
+        public static Pal_Object[]          poCoreData;
+        public static Pal_Object[]          poMainData;
 
-        public        Pal_Video         pvMapEdit           = null;
+        public        Pal_Video             pvMapEdit           = null;
 
-        //public static INT               iThisScene          = -1;
-        public static WORD              wScreenWave         = 0;
-        public static SHORT             sWaveProgression    = 0;
+        //public static INT                   iThisScene          = -1;
+        public static WORD                  wScreenWave         = 0;
+        public static SHORT                 sWaveProgression    = 0;
         public static List<Pal_Resources>   m_prResources   = new List<Pal_Resources>();
 
         // state of event object, used by the sState field of the EVENTOBJECT struct
