@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="PalStudio.NET" Icon="/Resources/LOGO.ICO" WindowStyle="None"
         SnapsToDevicePixels="True" WindowStartupLocation="CenterScreen"
-        Height="550" Width="750" MinHeight="550" MinWidth="750"
+        Height="550" Width="800" MinHeight="550" MinWidth="800"
         MaxHeight="{x:Static SystemParameters.MaximizedPrimaryScreenHeight}"
         MaxWidth="{x:Static SystemParameters.MaximizedPrimaryScreenWidth}" Loaded="Window_Loaded">
     <Window.Resources>
@@ -24,53 +24,97 @@
             <local:UtilCtrl_Win_ToolsButton x:Name="Win_ToolsButton" DockPanel.Dock="Top" Loaded="Win_ToolsButton_Loaded" />
             <Border>
                 <DockPanel LastChildFill="True">
-                    <Border DockPanel.Dock="Bottom" BorderThickness="2, 0, 0, 0">
-                        <DockPanel LastChildFill="True" Height="139">
-                            <Border DockPanel.Dock="Right" BorderThickness="1">
-                                <DockPanel LastChildFill="True" Width="180">
-                                    <Border DockPanel.Dock="Top" BorderThickness="0, 0, 0, 2">
-                                        <DockPanel LastChildFill="True" Height="80" Background="DodgerBlue">
-                                            <Label x:Name="ThisSceneNum_Label" HorizontalAlignment="Center" VerticalAlignment="Center" DockPanel.Dock="Top" FontSize="14" Foreground="Yellow">
-                                                未选择
-                                            </Label>
+                    <Border DockPanel.Dock="Bottom" BorderThickness="0, 1, 0, 0">
+                        <DockPanel LastChildFill="False">
+                            <DockPanel DockPanel.Dock="Top" LastChildFill="True" Height="139">
+                                <Border DockPanel.Dock="Right" BorderThickness="1, 1, 0, 1">
+                                    <DockPanel LastChildFill="True" Width="180">
+                                        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Height="80" Background="DodgerBlue">
+                                            <DockPanel DockPanel.Dock="Top" LastChildFill="True" Width="150">
+                                                <Label x:Name="ThisSceneNum_Label" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14" Foreground="Yellow">
+                                                    未选择
+                                                </Label>
+                                                <TextBox x:Name="ThisSceneIndex_TextBox" IsEnabled="False" Width="65" Height="30" HorizontalAlignment="Right" FontSize="20" Foreground="Crimson" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="ThisSceneIndex_TextBox_TextChanged">
+
+                                                </TextBox>
+                                            </DockPanel>
                                             <TextBlock x:Name="ThisSceneName_TextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" DockPanel.Dock="Top" TextWrapping="Wrap" FontSize="14" Foreground="LightYellow">
-                                            ------------
+                                                ------------
                                             </TextBlock>
                                         </DockPanel>
-                                    </Border>
-                                    <DockPanel LastChildFill="True" Height="55">
-                                        <Button x:Name="EnterScene_Button" IsEnabled="False" Click="EnterScene_Button_Click">确定</Button>
+                                        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Height="55">
+                                            <Button x:Name="EnterScene_Button" IsEnabled="False" Click="EnterScene_Button_Click">确定</Button>
+                                        </DockPanel>
                                     </DockPanel>
+                                </Border>
+                                <DockPanel LastChildFill="True" DockPanel.Dock="Right">
+                                    <Border BorderThickness="0, 0, 0, 1">
+                                        <DockPanel LastChildFill="True" Background="MistyRose">
+                                            <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                                                <Border BorderThickness="0, 0, 1, 0">
+                                                    <DockPanel x:Name="SceneNameList_DockPanel" LastChildFill="False" MouseDown="SceneNameList_DockPanel_MouseDown">
+                                                        
+                                                    </DockPanel>
+                                                </Border>
+                                            </ScrollViewer>
+                                        </DockPanel>
+                                    </Border>
                                 </DockPanel>
-                            </Border>
-                            <DockPanel LastChildFill="True" DockPanel.Dock="Right">
-                                <DockPanel LastChildFill="True" DockPanel.Dock="Top" Background="MistyRose">
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto">
-                                        <Border BorderThickness="0, 0, 1, 0">
-                                            <DockPanel x:Name="SceneNameList_DockPanel" LastChildFill="False" MouseDown="SceneNameList_DockPanel_MouseDown">
-                                                
-                                            </DockPanel>
-                                        </Border>
-                                    </ScrollViewer>
-                                </DockPanel>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Top" LastChildFill="False" Height="20" Background="Pink">
+                                <StatusBar Width="Auto">
+                                    <StatusBarItem Width="250" Background="LightGray">
+                                        <TextBlock Text="请选择欲编辑的场景" />
+                                    </StatusBarItem>
+                                    <StatusBarItem Background="Pink">
+                                        <TextBlock Text="BX: " />
+                                    </StatusBarItem>
+                                    <StatusBarItem Width="50" Background="pink">
+                                        <TextBlock Text="--(---)" />
+                                    </StatusBarItem>
+                                    <StatusBarItem Background="Chocolate">
+                                        <TextBlock Text="BY: " />
+                                    </StatusBarItem>
+                                    <StatusBarItem Width="50" Background="Chocolate">
+                                        <TextBlock Text="--(---)" />
+                                    </StatusBarItem>
+                                    <StatusBarItem Background="Pink">
+                                        <TextBlock Text="BH: " />
+                                    </StatusBarItem>
+                                    <StatusBarItem Width="50" Background="Pink">
+                                        <TextBlock Text="-" />
+                                    </StatusBarItem>
+                                    <StatusBarItem Background="Chocolate">
+                                        <TextBlock Text="X: " />
+                                    </StatusBarItem>
+                                    <StatusBarItem Width="80" Background="Chocolate">
+                                        <TextBlock Text="----(-----)" />
+                                    </StatusBarItem>
+                                    <StatusBarItem Background="Pink">
+                                        <TextBlock Text="Y: " />
+                                    </StatusBarItem>
+                                    <StatusBarItem Width="80" Background="Pink">
+                                        <TextBlock Text="----(-----)" />
+                                    </StatusBarItem>
+                                    <StatusBarItem Background="Chocolate">
+                                        <TextBlock Text="缩放: " />
+                                    </StatusBarItem>
+                                    <StatusBarItem Background="Chocolate">
+                                        <TextBox x:Name="MapViewportScale_TextBox" IsEnabled="False" Width="30" Background="Pink" Foreground="Crimson" HorizontalAlignment="Center" VerticalAlignment="Center" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="MapViewportScale_TextBox_TextChanged" LostFocus="MapViewportScale_TextBox_LostFocus">
+
+                                        </TextBox>
+                                    </StatusBarItem>
+                                    <StatusBarItem Background="Chocolate">
+                                        <TextBlock Text="%" />
+                                    </StatusBarItem>
+                                </StatusBar>
                             </DockPanel>
                         </DockPanel>
                     </Border>
                     <DockPanel x:Name="MapViewportBox_DockPanel" LastChildFill="True" DockPanel.Dock="Bottom">
                         <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
                             <ScrollViewer Background="Black" HorizontalScrollBarVisibility="Visible">
-                                <Canvas Width="2064" Height="2055">
-                                    <Canvas.Resources>
-                                        <Style TargetType="{x:Type Image}">
-                                            <Setter Property="RenderTransform">
-                                                <Setter.Value>
-                                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                                </Setter.Value>
-                                            </Setter>
-                                            <Setter Property="Stretch" Value="UniformToFill" />
-                                            <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor" />
-                                        </Style>
-                                    </Canvas.Resources>
+                                <Canvas x:Name="MapViewport_Canvas">
                                     <Image x:Name="MapViewport_Selected_Image" Panel.ZIndex="4" />
                                     <Image x:Name="MapViewport_Active_Image"   Panel.ZIndex="3" />
                                     <Image x:Name="MapViewport_Event_Image"    Panel.ZIndex="2" />

@@ -45,8 +45,6 @@ namespace PalStudio.NET
     /// </summary>
     public partial class Win_Main : Window
     {
-        private const  INT              mc_MapViewportScaleMin = 100, mc_MapViewportScaleMax = 999;
-
         private static BOOL             m_fCanClose = TRUE; 
         private static INT              m_iThisMapTile = -1, m_iMapViewportScale = 200;
         private static ScaleTransform   m_stMapViewport_ScaleTransform = new ScaleTransform();
@@ -104,14 +102,14 @@ namespace PalStudio.NET
             //
             // 初始缩放 <Map Viewport>
             //
-            MapViewportScale_TextChanged(m_iMapViewportScale);
+            UTIL_MapViewportScale_TextChanged(m_iMapViewportScale, MapViewport_Canvas, m_stMapViewport_ScaleTransform, MapViewportScale_TextBox);
 
             //
             // 初始化所有视图的 <Transform Scale> （缩放器）
             //
             foreach (Image image in MapViewport_Canvas.Children)
             {
-                if (image != null)
+                if (image != NULL)
                 {
                     image.RenderTransform = m_stMapViewport_ScaleTransform;
                 }
@@ -139,7 +137,7 @@ namespace PalStudio.NET
             //
             Border border = sender as Border;
 
-            if (border != null)
+            if (border != NULL)
             {
                 foreach (Border brother in Table_Button_Group.Children)
                 {
@@ -165,7 +163,7 @@ namespace PalStudio.NET
             //
             // 如果用户点击了 <确认> 按钮则继续
             //
-            if (win_SelectScene.fIsEnterScene)
+            if (win_SelectScene.GetIsEnterScene)
             {
                 //
                 // 初始化 <Map Tiles> 视图列表
@@ -243,6 +241,7 @@ namespace PalStudio.NET
                     MapBlockDisplayMode_ToolsButtonList.Opacity     = 1;
                     MapLayerMode_ToolsButtonList.IsEnabled          = TRUE;
                     MapLayerMode_ToolsButtonList.Opacity            = 1;
+                    MapViewportScale_TextBox.IsEnabled              = TRUE;
 
                     //
                     // 删除粉背景提示控件
@@ -255,34 +254,24 @@ namespace PalStudio.NET
 
         private void MapTilesList_DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            DockPanel dockPanel = sender as DockPanel;
+            //
+            // 获取当前选中 <Map Tile> 的编号
+            //
+            m_iThisMapTile = (INT)MapTilesList_DockPanel.Tag;
 
-            if (dockPanel       != NULL &&
-                dockPanel.Tag   != NULL)
-            {
-                //
-                // 获取当前选中 <Map Tile> 的编号
-                //
-                m_iThisMapTile = (INT)dockPanel.Tag;
+            //
+            // 更新当前 <Map Tile> 编号
+            //
+            ThisMapTileIndex_Label.Content  = $"[0x{m_iThisMapTile:X4}]";
+            ThisMapTileIndex_TextBox.Text   = m_iThisMapTile.ToString();
 
-                //
-                // 更新当前 <Map Tile> 编号
-                //
-                ThisMapTileIndex_Label.Content  = $"[0x{m_iThisMapTile:X4}]";
-                ThisMapTileIndex_TextBox.Text   = m_iThisMapTile.ToString();
-
-                //
-                // 更新当前 <Map Tile> 图像
-                //
-                ThisMapTile_Image.Source = ((UtilCtrl_MapTileList_Item)MapTilesList_DockPanel.Children[m_iThisMapTile]).GetMapTileImage().Source;
-            }
+            //
+            // 更新当前 <Map Tile> 图像
+            //
+            ThisMapTile_Image.Source = ((UtilCtrl_MapTileList_Item)MapTilesList_DockPanel.Children[m_iThisMapTile]).GetMapTileImage().Source;
         }
 
-        private void TextBox_Num_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            Regex regex = new Regex("^[0-9]+$");
-            e.Handled = !regex.IsMatch(e.Text);
-        }
+        private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e) => UTIL_TextBox_Num_PreviewTextInput(e);
 
         private void ThisMapTileIndex_TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -291,7 +280,7 @@ namespace PalStudio.NET
             //
             // 判断用户输入的数值是否合法
             //
-            if ((iThisMapTile = UTIL_TextBoxTextIsMatch(ThisMapTileIndex_TextBox, ref m_iThisMapTile)) == 0x7FFFFFFF) return;
+            if ((iThisMapTile = UTIL_TextBoxTextIsMatch(ThisMapTileIndex_TextBox, m_iThisMapTile)) == 0x7FFFFFFF) return;
 
             //
             // 数值未变动，退出函数
@@ -299,9 +288,9 @@ namespace PalStudio.NET
             if (iThisMapTile == m_iThisMapTile) return;
 
             //
-            // 最大输入值不得超过 <Map Tiles Max Index>
+            // 最大输入值不得超过 <Maximum Map Tiles Index>
             //
-            ThisMapTileIndex_TextBox.Text = (m_iThisMapTile = Math.Min(m_iThisMapTile, MapTilesList_DockPanel.Children.Count - 1)).ToString();
+            ThisMapTileIndex_TextBox.Text = (m_iThisMapTile = Math.Min(iThisMapTile, MapTilesList_DockPanel.Children.Count - 1)).ToString();
 
             //
             // 模拟 <UtilCtrl_MapTileList_Item> 点击
@@ -311,92 +300,11 @@ namespace PalStudio.NET
             //
             // 更新当前 <Map Tile> 编号
             //
-            MapTilesList_DockPanel_MouseDown(MapTilesList_DockPanel, (MouseButtonEventArgs)NULL);
+            MapTilesList_DockPanel_MouseDown(NULL, (MouseButtonEventArgs)NULL);
         }
 
-        private void
-        MapViewportScale_TextChanged(
-            INT             iMapViewportScal,
-            BOOL            fIsrReplaceTextBox = TRUE
-        )
-        {
-            //
-            // 修改样式表中 <Transform Scale> 的 <ScaleX> 和 <ScaleY> （缩放比）
-            //
-            m_stMapViewport_ScaleTransform.ScaleX = m_iMapViewportScale / (double)100;
-            m_stMapViewport_ScaleTransform.ScaleY = m_iMapViewportScale / (double)100;
+        private void MapViewportScale_TextBox_TextChanged(object sender, TextChangedEventArgs e) => UTIL_MapViewportScale_TextBox_TextChanged(sender, ref m_iMapViewportScale, MapViewport_Canvas, m_stMapViewport_ScaleTransform);
 
-            //
-            // 调整 <Map Viewport Canvas> 尺寸（画布）
-            //
-            MapViewport_Canvas.Width    = Pal_Map.m_MapWidth    * m_stMapViewport_ScaleTransform.ScaleX;
-            MapViewport_Canvas.Height   = Pal_Map.m_MapHeight   * m_stMapViewport_ScaleTransform.ScaleY;
-
-            if (fIsrReplaceTextBox)
-            {
-                //
-                // 更新 <Map Viewport Scale> 缩放百分比显示
-                //
-                MapViewportScale_TextBox.Text = m_iMapViewportScale.ToString();
-            }
-        }
-
-        private void MapViewportScale_TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            INT             iMapViewportScale;
-
-            //
-            // 判断用户输入的数值是否合法
-            //
-            if ((iMapViewportScale = UTIL_TextBoxTextIsMatch(MapViewportScale_TextBox, ref m_iMapViewportScale)) == 0x7FFFFFFF) return;
-
-            //
-            // 数值未变动，退出函数
-            //
-            if (iMapViewportScale == m_iMapViewportScale) return;
-
-            //
-            // 最大输入值不得超过 <999> %
-            //
-            m_iMapViewportScale = Math.Max(iMapViewportScale, mc_MapViewportScaleMin);
-            m_iMapViewportScale = Math.Min(m_iMapViewportScale, mc_MapViewportScaleMax);
-            if (iMapViewportScale >= mc_MapViewportScaleMin) MapViewportScale_TextBox.Text   = m_iMapViewportScale.ToString();
-
-            //
-            // 应用缩放倍数
-            //
-            MapViewportScale_TextChanged(m_iMapViewportScale, FALSE);
-        }
-
-        private void MapViewportScale_TextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            INT iMapViewportScale;
-
-            //
-            // 判断用户输入的数值是否合法
-            //
-            if ((iMapViewportScale = UTIL_TextBoxTextIsMatch(MapViewportScale_TextBox, ref m_iMapViewportScale)) == 0x7FFFFFFF)
-            {
-                //
-                // 用户输入了错误的百分值
-                //
-                goto tagEnd;
-            }
-
-            if (iMapViewportScale >= mc_MapViewportScaleMin)
-            {
-                //
-                // 用户输入百分值值正确
-                // 直接退出函数
-                //
-                return;
-            }
-
-tagEnd:
-            //
-            // 将缩放倍数还原到 <100> %
-            //
-            MapViewportScale_TextChanged(m_iMapViewportScale);
-        }
+        private void MapViewportScale_TextBox_LostFocus(object sender, RoutedEventArgs e) => UTIL_MapViewportScale_TextBox_LostFocus(sender, m_iMapViewportScale, MapViewport_Canvas, m_stMapViewport_ScaleTransform);
     }
 }

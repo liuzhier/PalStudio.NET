@@ -93,10 +93,12 @@ namespace PalMap
             { 0x0003C000, 0x0003C000, 0x0003C000, 0x0003C000 },
         };
 
-        public const  WORD m_MapWidth = 2064, m_MapHeight = 2055, m_MapTileWidth = 32, m_MapTileHeight = 15, wOffsetX_H = 16, wOffsetY_H = 8;
+        public const WORD   mc_wMapWidth = 2064, mc_wMapHeight = 2055, mc_wMapTileWidth = 32, mc_wMapTileHeight = 15, mc_wOffsetX_H = 16, mc_wOffsetY_H = 8, mc_wMinSceneIndex = 1;
+        public const INT    mc_iMapViewportScaleMin = 100, mc_iMapViewportScaleMax = 999;
 
-        public static readonly PAL_Rect m_MapRect       = new PAL_Rect(0, 0, m_MapWidth, m_MapHeight);
-        public static readonly PAL_Rect m_MapTileRect   = new PAL_Rect(0, 0, m_MapTileWidth, m_MapTileHeight);
+
+        public static readonly PAL_Rect m_MapRect       = new PAL_Rect(0, 0, mc_wMapWidth,      mc_wMapHeight);
+        public static readonly PAL_Rect m_MapTileRect   = new PAL_Rect(0, 0, mc_wMapTileWidth,  mc_wMapTileHeight);
         public static Surface           m_MapViewport_Surface, m_MapViewport_Active_Surface, m_MapViewport_Selected_Surface, m_MapViewport_Obstacle_Surface, m_MapViewport_Event_Surface;
 
         public static List<Surface>     mc_sfMapTileCursor = new List<Surface>();
@@ -119,7 +121,7 @@ namespace PalMap
             //
             for (iCursorType = 0; iCursorType < mc_byMapTileCursorColor.GetLength(1); iCursorType++)
             {
-                surface = new Surface(Pal_Map.m_MapTileWidth, Pal_Map.m_MapTileHeight);
+                surface = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
 
                 List<Color> colors = surface.palette.Colors.ToList();
 
@@ -128,14 +130,14 @@ namespace PalMap
 
                 surface.palette = new BitmapPalette(colors);
 
-                for (y = 0; y < Pal_Map.m_MapTileHeight; y++)
+                for (y = 0; y < Pal_Map.mc_wMapTileHeight; y++)
                 {
-                    for (x = 0; x < Pal_Map.m_MapTileWidth; x++)
+                    for (x = 0; x < Pal_Map.mc_wMapTileWidth; x++)
                     {
                         //
                         // 计算当前像素的内存地址
                         //
-                        pixelOffset = y * Pal_Map.m_MapTileWidth + x;
+                        pixelOffset = y * Pal_Map.mc_wMapTileWidth + x;
 
                         //
                         // 获取当前像素黑白值（位值）
@@ -160,11 +162,11 @@ namespace PalMap
             //
             // 初始化 <Map Viewport Surface>
             //
-            m_MapViewport_Active_Surface    = new Surface(Pal_Map.m_MapTileWidth,   Pal_Map.m_MapTileHeight);
-            m_MapViewport_Selected_Surface  = new Surface(Pal_Map.m_MapTileWidth,   Pal_Map.m_MapTileHeight);
-            m_MapViewport_Surface           = new Surface(Pal_Map.m_MapWidth,       Pal_Map.m_MapHeight);
-            m_MapViewport_Obstacle_Surface  = new Surface(Pal_Map.m_MapWidth,       Pal_Map.m_MapHeight);
-            m_MapViewport_Event_Surface     = new Surface(Pal_Map.m_MapWidth,       Pal_Map.m_MapHeight);
+            m_MapViewport_Active_Surface    = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
+            m_MapViewport_Selected_Surface  = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
+            m_MapViewport_Surface           = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_Obstacle_Surface  = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_Event_Surface     = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
 
             //
             // 初始化 <Map Tile Cursor>
@@ -463,7 +465,7 @@ namespace PalMap
                             //
                             // Check if this tile may cover the sprites
                             //
-                            if (byTile != null && iTileHeight > 0 && (dy + iTileHeight) * 16 + dh * 8 >= sy)
+                            if (byTile != NULL && iTileHeight > 0 && (dy + iTileHeight) * 16 + dh * 8 >= sy)
                             {
                                 //
                                 // This tile may cover the sprite
@@ -572,16 +574,16 @@ namespace PalMap
                         //
                         // 计算当前块的 <PosX>
                         //
-                        iPosX = x * Pal_Map.m_MapTileWidth;
-                        iPosY = y * (Pal_Map.m_MapTileHeight + 1);
+                        iPosX = x * Pal_Map.mc_wMapTileWidth;
+                        iPosY = y * (Pal_Map.mc_wMapTileHeight + 1);
 
                         if (((h + 1) % 2) == 0)
                         {
                             //
                             // <Half> 半块
                             //
-                            iPosX += Pal_Map.wOffsetX_H;
-                            iPosY += Pal_Map.wOffsetY_H;
+                            iPosX += Pal_Map.mc_wOffsetX_H;
+                            iPosY += Pal_Map.mc_wOffsetY_H;
                         }
 
                         pmtThisTile = Pal_Map.Tiles[y, x, h];
@@ -693,16 +695,16 @@ namespace PalMap
                             //
                             // 计算当前块的 <PosX>
                             //
-                            iPosX = x * Pal_Map.m_MapTileWidth;
-                            iPosY = y * (Pal_Map.m_MapTileHeight + 1);
+                            iPosX = x * Pal_Map.mc_wMapTileWidth;
+                            iPosY = y * (Pal_Map.mc_wMapTileHeight + 1);
 
                             if (((h + 1) % 2) == 0)
                             {
                                 //
                                 // <Half> 半块
                                 //
-                                iPosX += Pal_Map.wOffsetX_H;
-                                iPosY += Pal_Map.wOffsetY_H;
+                                iPosX += Pal_Map.mc_wOffsetX_H;
+                                iPosY += Pal_Map.mc_wOffsetY_H;
                             }
 
                             Pal_Map.DrawMapTileCursor(MapTileCursorColorType.Obstacle, dest_Image, PAL_XY(iPosX, iPosY));
@@ -732,13 +734,6 @@ namespace PalMap
             {
                 iPosX   = poEvent.GetItem(i, lpszX);
                 iPosY   = poEvent.GetItem(i, lpszY);
-
-                //
-                // 计算实际 <Position> 和 <Layer>
-                //
-                //sSpriteLayer    = (SHORT)(sSpriteLayer * 8 + 2);
-                //iPosX          -= PAL_RLEGetWidth(tmp_bySprite) / 2;
-                //iPosY          += sSpriteLayer + 9;
 
                 Pal_Map.DrawMapTileCursor(MapTileCursorColorType.Event, dest_Image, PAL_XY(iPosX, iPosY));
             }

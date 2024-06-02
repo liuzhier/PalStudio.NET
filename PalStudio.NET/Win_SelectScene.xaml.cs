@@ -51,9 +51,17 @@ namespace PalStudio.NET
     /// </summary>
     public partial class Win_SelectScene : Window
     {
-        private static  INT         m_nScene, m_iThisScene = -1, m_iLastScene = -1;
-        private static  BOOL        m_fCanClose = FALSE, m_fIsLoadingCompleted = FALSE;
-        private static  Surface     m_Surface;
+        private enum EnterSceneStatus
+        {
+            Init,
+            Enter,
+            Close,
+        }
+
+        private static INT              m_nScene, m_iThisScene = -1, m_iMapViewportScale = 100;
+        private static BOOL             m_fCanClose = FALSE;
+        private static EnterSceneStatus me_essEnterSceneStatus;
+        private static ScaleTransform   m_stMapViewport_ScaleTransform = new ScaleTransform();
 
         public Win_SelectScene()
         {
@@ -84,6 +92,16 @@ namespace PalStudio.NET
             return m_fCanClose;
         }
 
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+
+            //
+            // 开启窗口时初始化 <Scene> 的选定状态
+            //
+            me_essEnterSceneStatus = EnterSceneStatus.Init;
+        }
+
         protected override void OnClosing(CancelEventArgs e)
         {
             if (!GetCanClose())
@@ -102,6 +120,11 @@ namespace PalStudio.NET
                 //
                 base.OnClosing(e);
             }
+
+            //
+            // 关闭窗口即代表用户取消了选择 <Scene> 
+            //
+            if (me_essEnterSceneStatus != EnterSceneStatus.Enter) me_essEnterSceneStatus = EnterSceneStatus.Close;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -112,9 +135,20 @@ namespace PalStudio.NET
             UtilCtrl_ItemList_Item  uciliMapNameItem;
 
             //
-            // 初始化 <Surface>
+            // 初始缩放 <Map Viewport>
             //
-            m_Surface = new Surface(2064, 2055);
+            UTIL_MapViewportScale_TextChanged(m_iMapViewportScale, MapViewport_Canvas, m_stMapViewport_ScaleTransform, MapViewportScale_TextBox);
+
+            //
+            // 初始化所有视图的 <Transform Scale> （缩放器）
+            //
+            foreach (Image image in MapViewport_Canvas.Children)
+            {
+                if (image != NULL)
+                {
+                    image.RenderTransform = m_stMapViewport_ScaleTransform;
+                }
+            }
 
             //
             // 获取地图文件节点
@@ -139,7 +173,7 @@ namespace PalStudio.NET
             //
             // 将所有场景名称添加至场景列表
             //
-            for (i = 1; i < m_nScene; i++)
+            for (i = Pal_Map.mc_wMinSceneIndex; i < m_nScene; i++)
             {
                 uciliMapNameItem = new UtilCtrl_ItemList_Item();
                 lpszMapName = Pal_Cfg_GetCfgNodeItem(lpszSceneDesc, $"0x{i:X4}").lpszTitle;
@@ -151,6 +185,11 @@ namespace PalStudio.NET
                 SceneNameList_DockPanel.Children.Add(uciliMapNameItem);
                 DockPanel.SetDock(uciliMapNameItem, Dock.Top);
             }
+
+            //
+            // 允许用户通过输入框选择 <Scene>
+            //
+            ThisSceneIndex_TextBox.IsEnabled = TRUE;
         }
 
         private void Win_ToolsButton_Loaded(object sender, RoutedEventArgs e)
@@ -173,79 +212,115 @@ namespace PalStudio.NET
         )
         {
             ThisSceneName_TextBlock.Text    = Pal_Cfg_GetCfgNodeItem(lpszSceneDesc, $"0x{iItemNum:X4}").lpszTitle;
-            ThisSceneNum_Label.Content      = $"[0x{iItemNum:X4}] {iItemNum:D5}";
+            ThisSceneNum_Label.Content      = $"[0x{iItemNum:X4}]";
+            ThisSceneIndex_TextBox.Text     = iItemNum.ToString();
         }
 
         private void SceneNameList_DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            INT             iThisScene, x, y;
-            DockPanel       dockPanel = sender as DockPanel;
+            INT             iThisScene;
 
-            if (dockPanel       != NULL &&
-                dockPanel.Tag   != NULL)
+            //
+            // 获取当前选中场景的编号
+            //
+            iThisScene = (INT)SceneNameList_DockPanel.Tag - 1;
+
+            if (m_iThisScene == -1 || m_iThisScene != iThisScene)
             {
                 //
-                // 获取当前选中场景的编号
+                // 当前选中场景的编号发生变化
+                // 设置当前选中场景的编号
                 //
-                iThisScene = (INT)dockPanel.Tag - 1;
+                m_iThisScene        = iThisScene;
 
-                if (m_iThisScene == -1 || m_iThisScene != iThisScene)
+                //
+                // 初始化当前选中的 <Scene> 对应的 <Map> 数据
+                //
+                Pal_Map.Init(m_iThisScene);
+
+                //
+                // 更新当前选择的场景名称
+                //
+                ReplaceThisSceneName(iThisScene + 1);
+
+                //
+                // 通过 <图层> 对资源列表进行排序
+                //
+                Pal_Global.m_prResources = Pal_Resources.ResourcesOrderByPosY(Pal_Global.m_prResources);
+
+                //
+                // 绘制资源列表中所有的 <Sprite> 元素
+                //
+                Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, Pal_Map.m_MapViewport_Surface.CleanSpirit());
+
+                //
+                // 开始将 <Surface> 转换为 <Image>
+                //
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Surface,             MapViewport_Image,          Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,    MapViewport_Obstacle_Image, Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Event_Surface,       MapViewport_Event_Image,    Pal_Map.m_MapRect);
+
+                //
+                // 绘制 <障碍块>
+                //
+                Pal_Map.DrawObstacleBlock(MapViewport_Obstacle_Image);
+
+                //
+                // 绘制 <事件块>
+                //
+                Pal_Map.DrawEventBlock(MapViewport_Event_Image);
+
+                //
+                // 删除粉背景提示控件
+                // 允许用户点击 <确认> 按钮
+                // 允许调整 <Map Viewport> 缩放
+                //
+                if (MapViewport_Border.Visibility != Visibility.Visible)
                 {
-                    //
-                    // 当前选中场景的编号发生变化
-                    // 设置当前选中场景的编号
-                    //
-                    m_iThisScene        = iThisScene;
-
-                    //
-                    // 初始化当前选中的 <Scene> 对应的 <Map> 数据
-                    //
-                    Pal_Map.Init(m_iThisScene);
-
-                    //
-                    // 更新当前选择的场景名称
-                    //
-                    ReplaceThisSceneName(iThisScene + 1);
-
-                    //
-                    // 通过 <图层> 对资源列表进行排序
-                    //
-                    Pal_Global.m_prResources = Pal_Resources.ResourcesOrderByPosY(Pal_Global.m_prResources);
-
-                    //
-                    // 绘制资源列表中所有的 <Sprite> 元素
-                    //
-                    Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, Pal_Map.m_MapViewport_Surface.CleanSpirit());
-
-                    //
-                    // 开始将 <Surface> 转换为 <Image>
-                    //
-                    VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Surface,             MapViewport_Image,          Pal_Map.m_MapRect);
-                    VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,    MapViewport_Obstacle_Image, Pal_Map.m_MapRect);
-                    VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Event_Surface,       MapViewport_Event_Image,    Pal_Map.m_MapRect);
-
-                    //
-                    // 绘制 <障碍块>
-                    //
-                    Pal_Map.DrawObstacleBlock(MapViewport_Obstacle_Image);
-
-                    //
-                    // 绘制 <事件块>
-                    //
-                    Pal_Map.DrawEventBlock(MapViewport_Event_Image);
-
-                    //
-                    // 删除粉背景提示控件，允许用户点击 <确认> 按钮
-                    //
-                    if (MapViewport_Border.Visibility != Visibility.Visible)
-                    {
-                        MapViewportBox_DockPanel.Children.Remove(Tip_NotSelected_DockPanel);
-                        MapViewport_Border.Visibility = Visibility.Visible;
-                        EnterScene_Button.IsEnabled = TRUE;
-                    }
+                    MapViewportBox_DockPanel.Children.Remove(Tip_NotSelected_DockPanel);
+                    MapViewport_Border.Visibility       = Visibility.Visible;
+                    EnterScene_Button.IsEnabled         = TRUE;
+                    MapViewportScale_TextBox.IsEnabled  = TRUE;
                 }
             }
         }
+
+        private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e) => UTIL_TextBox_Num_PreviewTextInput(e);
+
+        private void ThisSceneIndex_TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            INT iSceneNum;
+
+            //
+            // 判断用户输入的数值是否合法
+            //
+            if ((iSceneNum = UTIL_TextBoxTextIsMatch(ThisSceneIndex_TextBox, Pal_Map.m_iSceneNum)) == 0x7FFFFFFF) return;
+
+            //
+            // 数值未变动，退出函数
+            //
+            if (iSceneNum == Pal_Map.m_iSceneNum) return;
+
+            //
+            // 最大输入值不得超过 <Maximum scene index>
+            //
+            iSceneNum                   = Math.Max(iSceneNum, Pal_Map.mc_wMinSceneIndex);
+            ThisSceneIndex_TextBox.Text = (Pal_Map.m_iSceneNum = Math.Min(iSceneNum, m_nScene - 1)).ToString();
+
+            //
+            // 模拟 <UtilCtrl_MapTileList_Item> 点击
+            //
+            ((UtilCtrl_ItemList_Item)SceneNameList_DockPanel.Children[Pal_Map.m_iSceneNum - Pal_Map.mc_wMinSceneIndex]).SimulateMouseDown();
+
+            //
+            // 更新当前 <Map Tile> 编号
+            //
+            SceneNameList_DockPanel_MouseDown(NULL, (MouseButtonEventArgs)NULL);
+        }
+
+        private void MapViewportScale_TextBox_TextChanged(object sender, TextChangedEventArgs e) => UTIL_MapViewportScale_TextBox_TextChanged(sender, ref m_iMapViewportScale, MapViewport_Canvas, m_stMapViewport_ScaleTransform);
+
+        private void MapViewportScale_TextBox_LostFocus(object sender, RoutedEventArgs e) => UTIL_MapViewportScale_TextBox_LostFocus(sender, m_iMapViewportScale, MapViewport_Canvas, m_stMapViewport_ScaleTransform);
 
         private void EnterScene_Button_Click(object sender, RoutedEventArgs e)
         {
@@ -255,20 +330,21 @@ namespace PalStudio.NET
             Pal_Map.m_iSceneNum = m_iThisScene;
 
             //
+            // 设置 <Scene> 的选定状态
+            //
+            me_essEnterSceneStatus = EnterSceneStatus.Enter;
+
+            //
             // “关闭”（隐藏）当前窗口
             //
             this.Close();
         }
 
-        public BOOL fIsEnterScene
+        public BOOL GetIsEnterScene
         {
             get
             {
-                BOOL fIsEnter   = m_iLastScene != Pal_Map.m_iSceneNum;
-
-                if (Pal_Map.m_iSceneNum == m_iThisScene) m_iLastScene = m_iThisScene;
-
-                return fIsEnter;
+                return me_essEnterSceneStatus == EnterSceneStatus.Enter;
             }
         }
     }

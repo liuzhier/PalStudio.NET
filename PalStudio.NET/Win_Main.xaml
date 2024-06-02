@@ -211,7 +211,7 @@
                                                 <TextBlock Text="缩放: " />
                                             </StatusBarItem>
                                             <StatusBarItem Background="Chocolate">
-                                                <TextBox x:Name="MapViewportScale_TextBox" Width="30" Background="Pink" Foreground="Crimson" HorizontalAlignment="Center" VerticalAlignment="Center" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_Num_PreviewTextInput" TextChanged="MapViewportScale_TextBox_TextChanged" LostFocus="MapViewportScale_TextBox_LostFocus">
+                                                <TextBox x:Name="MapViewportScale_TextBox" IsEnabled="False" Width="30" Background="Pink" Foreground="Crimson" HorizontalAlignment="Center" VerticalAlignment="Center" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="MapViewportScale_TextBox_TextChanged" LostFocus="MapViewportScale_TextBox_LostFocus">
                                                     
                                                 </TextBox>
                                             </StatusBarItem>
@@ -233,7 +233,7 @@
                                                                 <Label x:Name="ThisMapTileIndex_Label" DockPanel.Dock="Top" Foreground="Crimson" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                                     未选择
                                                                 </Label>
-                                                                <TextBox x:Name="ThisMapTileIndex_TextBox" DockPanel.Dock="Top" Height="30" FontSize="20" Foreground="Crimson" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_Num_PreviewTextInput" TextChanged="ThisMapTileIndex_TextBox_TextChanged">
+                                                                <TextBox x:Name="ThisMapTileIndex_TextBox" DockPanel.Dock="Top" Height="30" FontSize="20" Foreground="Crimson" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="ThisMapTileIndex_TextBox_TextChanged">
                                                                     
                                                                 </TextBox>
                                                             </DockPanel>

@@ -90,5 +90,14 @@ namespace PalStudio.NET
                 this.SetBackground(Brushes.LightSkyBlue);
             }
         }
+
+        public void
+        SimulateMouseDown()
+        {
+            //
+            // 模拟鼠标按下当前 <UtilCtrl_ItemList_Item>
+            //
+            DockPanel_MouseDown(this, (MouseButtonEventArgs)NULL);
+        }
     }
 }

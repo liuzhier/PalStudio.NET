@@ -47,14 +47,14 @@ namespace PalStudio.NET
 
         private void Windows_Exit(object sender, RoutedEventArgs e)
         {
-            if (thisWindow != null) thisWindow.Close();
+            if (thisWindow != NULL) thisWindow.Close();
         }
 
         private void Windows_Max(object sender, RoutedEventArgs e)
         {
             DockPanel button = sender as DockPanel;
 
-            if (thisWindow != null && button != null)
+            if (thisWindow != NULL && button != NULL)
             {
                 thisWindow.WindowState = WindowState.Maximized;
 
@@ -67,7 +67,7 @@ namespace PalStudio.NET
         {
             DockPanel button = sender as DockPanel;
 
-            if (thisWindow != null && button != null)
+            if (thisWindow != NULL && button != NULL)
             {
                 thisWindow.WindowState = WindowState.Normal;
 
@@ -78,7 +78,7 @@ namespace PalStudio.NET
 
         private void Windows_Min(object sender, RoutedEventArgs e)
         {
-            if (thisWindow != null) thisWindow.WindowState = WindowState.Minimized;
+            if (thisWindow != NULL) thisWindow.WindowState = WindowState.Minimized;
         }
 
         private void Win_Moving_Element_MouseDown(object sender, MouseButtonEventArgs e)
@@ -93,7 +93,7 @@ namespace PalStudio.NET
             //
             DockPanel button = sender as DockPanel;
 
-            if (button != null)
+            if (button != NULL)
             {
                 button.Background = m_scbEnter;
             }
@@ -106,7 +106,7 @@ namespace PalStudio.NET
             //
             DockPanel button = sender as DockPanel;
 
-            if (button != null)
+            if (button != NULL)
             {
                 button.Background   = m_scbOrigin;
             }

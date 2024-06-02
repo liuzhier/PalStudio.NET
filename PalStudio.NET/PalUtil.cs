@@ -19,6 +19,9 @@ using LPSTR     = System.String;
 using static PalGlobal.Pal_Global;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using PalMap;
 
 namespace PalUtil
 {
@@ -225,7 +228,7 @@ namespace PalUtil
         public static INT
         UTIL_TextBoxTextIsMatch(
             TextBox     textBox,
-        ref INT         iDataExchange
+            INT         iDataExchange
         )
         {
             if (textBox         != NULL &&
@@ -252,6 +255,123 @@ namespace PalUtil
             }
 
             return 0x7FFFFFFF;
+        }
+
+        private static Regex m_Regex = new Regex("^[0-9]+$");
+
+        public static void
+        UTIL_TextBox_Num_PreviewTextInput(
+            TextCompositionEventArgs    e
+        )
+        {
+            e.Handled = !m_Regex.IsMatch(e.Text);
+        }
+
+        public static void
+        UTIL_MapViewportScale_TextChanged(
+            INT             iMapViewportScal,
+            Canvas          cvsMapViewport_Canvas,
+            ScaleTransform  stMapViewport_ScaleTransform,
+            TextBox         tbMapViewportScale_TextBox = (TextBox)NULL
+        )
+        {
+            //
+            // 修改样式表中 <Transform Scale> 的 <ScaleX> 和 <ScaleY> （缩放比）
+            //
+            stMapViewport_ScaleTransform.ScaleX = iMapViewportScal / (double)100;
+            stMapViewport_ScaleTransform.ScaleY = iMapViewportScal / (double)100;
+
+            //
+            // 调整 <Map Viewport Canvas> 尺寸（画布）
+            //
+            cvsMapViewport_Canvas.Width     = Pal_Map.mc_wMapWidth  * stMapViewport_ScaleTransform.ScaleX;
+            cvsMapViewport_Canvas.Height    = Pal_Map.mc_wMapHeight * stMapViewport_ScaleTransform.ScaleY;
+
+            if (tbMapViewportScale_TextBox != NULL)
+            {
+                //
+                // 更新 <Map Viewport Scale> 缩放百分比显示
+                //
+                tbMapViewportScale_TextBox.Text = iMapViewportScal.ToString();
+            }
+        }
+
+        public static void
+        UTIL_MapViewportScale_TextBox_TextChanged(
+            object          sender,
+        ref INT             ref_iMapViewportScale,
+            Canvas          cvsMapViewport_Canvas,
+            ScaleTransform  stMapViewport_ScaleTransform
+        )
+        {
+            INT             iMapViewportScale;
+            TextBox         textBox = sender as TextBox;
+
+            if (textBox != NULL)
+            {
+                //
+                // 判断用户输入的数值是否合法
+                //
+                if ((iMapViewportScale = UTIL_TextBoxTextIsMatch(textBox, ref_iMapViewportScale)) == 0x7FFFFFFF) return;
+
+                //
+                // 数值未变动，退出函数
+                //
+                if (iMapViewportScale == ref_iMapViewportScale) return;
+
+                //
+                // 最大输入值不得超过 <999> %
+                //
+                ref_iMapViewportScale = Math.Max(iMapViewportScale,     Pal_Map.mc_iMapViewportScaleMin);
+                ref_iMapViewportScale = Math.Min(ref_iMapViewportScale, Pal_Map.mc_iMapViewportScaleMax);
+                if (iMapViewportScale >= Pal_Map.mc_iMapViewportScaleMin) textBox.Text = ref_iMapViewportScale.ToString();
+
+                //
+                // 应用缩放倍数
+                //
+                UTIL_MapViewportScale_TextChanged(ref_iMapViewportScale, cvsMapViewport_Canvas, stMapViewport_ScaleTransform);
+            }
+        }
+
+        public static void
+        UTIL_MapViewportScale_TextBox_LostFocus(
+            object          sender,
+            INT             iMapViewportScale,
+            Canvas          cvsMapViewport_Canvas,
+            ScaleTransform  stMapViewport_ScaleTransform
+        )
+        {
+            INT         iScale;
+            TextBox     textBox = sender as TextBox;
+
+            if (textBox != NULL)
+            {
+                //
+                // 判断用户输入的数值是否合法
+                //
+                if ((iScale = UTIL_TextBoxTextIsMatch(textBox, iMapViewportScale)) == 0x7FFFFFFF)
+                {
+                    //
+                    // 用户输入了错误的百分值
+                    //
+                    goto tagEnd;
+                }
+
+                if (iScale >= Pal_Map.mc_iMapViewportScaleMin)
+                {
+                    //
+                    // 用户输入百分值值正确
+                    // 直接退出函数
+                    //
+                    return;
+                }
+
+tagEnd:
+                //
+                // 将缩放倍数还原到 <100> %
+                //
+                UTIL_MapViewportScale_TextChanged(iMapViewportScale, cvsMapViewport_Canvas, stMapViewport_ScaleTransform, textBox);
+            }
         }
     }
 }
