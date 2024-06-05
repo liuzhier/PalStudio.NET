@@ -56,6 +56,14 @@ namespace PalMap
             public BYTE HighTile_Layer  = 0;
         }
 
+        public enum MapDrawingStep
+        {
+            LowTile     = 1 << 0,
+            HighTile    = 1 << 1,
+            EventSpirit = 1 << 2,
+            MaskTile    = 1 << 3,
+        }
+
         public enum MapTileCursorColorType
         {
             Active,
@@ -99,7 +107,7 @@ namespace PalMap
 
         public static readonly PAL_Rect m_MapRect       = new PAL_Rect(0, 0, mc_wMapWidth,      mc_wMapHeight);
         public static readonly PAL_Rect m_MapTileRect   = new PAL_Rect(0, 0, mc_wMapTileWidth,  mc_wMapTileHeight);
-        public static Surface           m_MapViewport_Surface, m_MapViewport_Active_Surface, m_MapViewport_Selected_Surface, m_MapViewport_Obstacle_Surface, m_MapViewport_Event_Surface;
+        public static Surface           m_MapViewport_Low_Surface, m_MapViewport_High_Surface, m_MapViewport_EventSpiritAndMaskTile_Surface, m_MapViewport_Obstacle_Surface, m_MapViewport_Event_Surface;
 
         public static List<Surface>     mc_sfMapTileCursor = new List<Surface>();
 
@@ -162,22 +170,22 @@ namespace PalMap
             //
             // 初始化 <Map Viewport Surface>
             //
-            m_MapViewport_Active_Surface    = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
-            m_MapViewport_Selected_Surface  = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
-            m_MapViewport_Surface           = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
-            m_MapViewport_Obstacle_Surface  = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
-            m_MapViewport_Event_Surface     = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_Low_Surface                       = new Surface(Pal_Map.mc_wMapWidth, Pal_Map.mc_wMapHeight);
+            m_MapViewport_High_Surface                      = new Surface(Pal_Map.mc_wMapWidth, Pal_Map.mc_wMapHeight);
+            m_MapViewport_EventSpiritAndMaskTile_Surface    = new Surface(Pal_Map.mc_wMapWidth, Pal_Map.mc_wMapHeight);
+            m_MapViewport_Obstacle_Surface                  = new Surface(Pal_Map.mc_wMapWidth, Pal_Map.mc_wMapHeight);
+            m_MapViewport_Event_Surface                     = new Surface(Pal_Map.mc_wMapWidth, Pal_Map.mc_wMapHeight);
 
             //
-            // 初始化 <Map Tile Cursor>
+            // 初始化 <Map Tile Cursor> （主要是为了初始化它们的调色板）
             //
-            Pal_Map.InitMapTileCursor();
+            InitMapTileCursor();
 
             //
             // 重设 <额外信息视图> 调色板
             //
-            m_MapViewport_Active_Surface.palette    = mc_sfMapTileCursor[0].palette;
-            m_MapViewport_Selected_Surface.palette  = mc_sfMapTileCursor[1].palette;
+            //m_MapViewport_Active_Surface.palette    = mc_sfMapTileCursor[0].palette;
+            //m_MapViewport_Selected_Surface.palette  = mc_sfMapTileCursor[1].palette;
             m_MapViewport_Obstacle_Surface.palette  = mc_sfMapTileCursor[2].palette;
             m_MapViewport_Event_Surface.palette     = mc_sfMapTileCursor[3].palette;
         }
@@ -474,7 +482,7 @@ namespace PalMap
                                 iPosY               = dy * 16 + dh * 8 + 7 + l + iTileHeight * 8;
                                 sSpriteActualLayer  = (SHORT)(iTileHeight * 8 + l);
 
-                                tmpResources = new Pal_Resources(byTile, PAL_XY(iPosX, iPosY), sSpriteActualLayer);
+                                tmpResources        = new Pal_Resources(byTile, PAL_XY(iPosX, iPosY), sSpriteActualLayer, 1);
                                 Pal_Global.m_prResources.Add(tmpResources);
                             }
                         }
@@ -486,7 +494,7 @@ namespace PalMap
         public static void
         InitMapResources()
         {
-            INT             x, y, h, iPosX = 0, iPosY = 0;
+            INT             i, iPosX = 0, iPosY = 0;
             WORD            wSpriteNum, wDirection, wDirectionFrames, wCurrentFrameNum;
             SHORT           sSpriteLayer;
             BYTE[]          tmp_bySprite;
@@ -506,15 +514,15 @@ namespace PalMap
             //
             // 将所有 <Sprite> 块放入资源列表
             //
-            for (y = Pal_Map.m_iStartEvent; y < Pal_Map.m_iEndEvent; y++)
+            for (i = Pal_Map.m_iStartEvent; i < Pal_Map.m_iEndEvent; i++)
             {
-                iPosX               = poEvent.GetItem(y, lpszX);
-                iPosY               = poEvent.GetItem(y, lpszY);
-                sSpriteLayer        = poEvent.GetItem(y, lpszLayer);
-                wSpriteNum          = poEvent.GetItem(y, lpszSpriteNum);
-                wDirection          = poEvent.GetItem(y, lpszDirection);
-                wDirectionFrames    = poEvent.GetItem(y, lpszDirectionFrames);
-                wCurrentFrameNum    = poEvent.GetItem(y, lpszCurrentFrameNum);
+                iPosX               = poEvent.GetItem(i, lpszX);
+                iPosY               = poEvent.GetItem(i, lpszY);
+                sSpriteLayer        = poEvent.GetItem(i, lpszLayer);
+                wSpriteNum          = poEvent.GetItem(i, lpszSpriteNum);
+                wDirection          = poEvent.GetItem(i, lpszDirection);
+                wDirectionFrames    = poEvent.GetItem(i, lpszDirectionFrames);
+                wCurrentFrameNum    = poEvent.GetItem(i, lpszCurrentFrameNum);
                 tmp_bySprite        = PAL_GetEventObjectSprite(wSpriteNum);
 
                 if (tmp_bySprite == NULL) continue;
@@ -527,7 +535,7 @@ namespace PalMap
                 iPosX          -= PAL_RLEGetWidth(tmp_bySprite) / 2;
                 iPosY          += sSpriteLayer + 9;
 
-                tmpResources    = new Pal_Resources(tmp_bySprite, PAL_XY(iPosX, iPosY), sSpriteLayer);
+                tmpResources    = new Pal_Resources(tmp_bySprite, PAL_XY(iPosX, iPosY), sSpriteLayer, 0);
                 Pal_Global.m_prResources.Add(tmpResources);
 
                 //
@@ -556,7 +564,10 @@ namespace PalMap
         public static void
         DrawMapTileAndSprite(
             List<Pal_Resources>     list_prResources,
-            Surface                 destSurface
+            Surface                 Low_Surface,
+            Surface                 High_Surface,
+            Surface                 MapViewport_EventSpiritAndMaskTile_Surface,
+            MapDrawingStep          mdsMapDrawingStep
         )
         {
             INT             x, y, h, iPosX, iPosY;
@@ -565,60 +576,93 @@ namespace PalMap
             //
             // 先绘制一遍完整的地图
             //
-            for (y = 0; y < Pal_Map.Tiles.GetLength(0); y++)
+            if ((mdsMapDrawingStep & MapDrawingStep.LowTile)  != 0 ||
+                (mdsMapDrawingStep & MapDrawingStep.HighTile) != 0)
             {
-                for (x = 0; x < Pal_Map.Tiles.GetLength(1); x++)
+                for (y = 0; y < Pal_Map.Tiles.GetLength(0); y++)
                 {
-                    for (h = 0; h < Pal_Map.Tiles.GetLength(2); h++)
+                    for (x = 0; x < Pal_Map.Tiles.GetLength(1); x++)
                     {
-                        //
-                        // 计算当前块的 <PosX>
-                        //
-                        iPosX = x * Pal_Map.mc_wMapTileWidth;
-                        iPosY = y * (Pal_Map.mc_wMapTileHeight + 1);
-
-                        if (((h + 1) % 2) == 0)
+                        for (h = 0; h < Pal_Map.Tiles.GetLength(2); h++)
                         {
                             //
-                            // <Half> 半块
+                            // 计算当前块的 <PosX>
                             //
-                            iPosX += Pal_Map.mc_wOffsetX_H;
-                            iPosY += Pal_Map.mc_wOffsetY_H;
+                            iPosX = x * Pal_Map.mc_wMapTileWidth;
+                            iPosY = y * (Pal_Map.mc_wMapTileHeight + 1);
+
+                            if (((h + 1) % 2) == 0)
+                            {
+                                //
+                                // <Half> 半块
+                                //
+                                iPosX += Pal_Map.mc_wOffsetX_H;
+                                iPosY += Pal_Map.mc_wOffsetY_H;
+                            }
+
+                            pmtThisTile = Pal_Map.Tiles[y, x, h];
+
+                            //
+                            // 绘制低层 <Map Tile>
+                            //
+                            if ((mdsMapDrawingStep & MapDrawingStep.LowTile) != 0)
+                            {
+                                PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, pmtThisTile.LowTile_Num), Low_Surface, PAL_XY(iPosX, iPosY));
+                            }
+
+                            //
+                            // 绘制高层 <Map Tile> （跳过空图像）
+                            //
+                            if ((mdsMapDrawingStep & MapDrawingStep.HighTile) != 0)
+                            {
+                                if ((SHORT)pmtThisTile.HighTile_Num == -1) continue;
+
+                                PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, pmtThisTile.HighTile_Num), High_Surface, PAL_XY(iPosX, iPosY));
+                            }
                         }
-
-                        pmtThisTile = Pal_Map.Tiles[y, x, h];
-
-                        //
-                        // 绘制低层 <Map Tile>
-                        //
-                        PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, pmtThisTile.LowTile_Num), destSurface, PAL_XY(iPosX, iPosY));
-
-                        //
-                        // 绘制高层 <Map Tile> （跳过空图像）
-                        //
-                        if ((SHORT)pmtThisTile.HighTile_Num == -1) continue;
-
-                        PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, pmtThisTile.HighTile_Num), destSurface, PAL_XY(iPosX, iPosY));
                     }
                 }
             }
 
             //
-            // 绘制资源列表中所有的 <Sprite> 元素
+            // 绘制资源列表中所有的 <Spirit> 元素
             //
-            foreach (Pal_Resources tmpRes in list_prResources)
+            if ((mdsMapDrawingStep & MapDrawingStep.EventSpirit) != 0 ||
+                (mdsMapDrawingStep & MapDrawingStep.MaskTile)    != 0)
             {
-                x = PAL_X(tmpRes.m_pos);
-                y = PAL_Y(tmpRes.m_pos) - PAL_RLEGetHeight(tmpRes.m_bySpirit) - tmpRes.m_sLayer;
+                foreach (Pal_Resources tmpRes in list_prResources)
+                {
+                    x = PAL_X(tmpRes.m_pos);
+                    y = PAL_Y(tmpRes.m_pos) - PAL_RLEGetHeight(tmpRes.m_bySpirit) - tmpRes.m_sLayer;
 
-                //
-                // 因为这里地图是完全显示的，没有截掉边缘处的多余三角块
-                // 所以要额外加上这些三角块的尺寸（其实就是偏移）
-                //
-                x += 16;
-                y += 8;
+                    //
+                    // 因为这里地图是完全显示的，没有截掉边缘处的多余三角块
+                    // 所以要额外加上这些三角块的尺寸（其实就是偏移）
+                    //
+                    x += 16;
+                    y += 8;
 
-                PAL_RLEBlitToSurface(tmpRes.m_bySpirit, destSurface, PAL_XY(x, y));
+                    if (tmpRes.m_byTag == 0)
+                    {
+                        //
+                        // 绘制 <Event Spirit>
+                        //
+                        if ((mdsMapDrawingStep & MapDrawingStep.EventSpirit) != 0)
+                        {
+                            PAL_RLEBlitToSurface(tmpRes.m_bySpirit, MapViewport_EventSpiritAndMaskTile_Surface, PAL_XY(x, y));
+                        }
+                    }
+                    else
+                    {
+                        //
+                        // 绘制 <Make Tile> （遮挡块）
+                        //
+                        if ((mdsMapDrawingStep & MapDrawingStep.MaskTile) != 0)
+                        {
+                            PAL_RLEBlitToSurface(tmpRes.m_bySpirit, MapViewport_EventSpiritAndMaskTile_Surface, PAL_XY(x, y));
+                        }
+                    }
+                }
             }
         }
 
@@ -629,7 +673,7 @@ namespace PalMap
             PAL_POS                 pos
         )
         {
-            INT             iCursorType;
+            INT             iCursorType, x, y, pixelOffset;
             WriteableBitmap wbRenderer;
             PAL_Rect        rect;
 
@@ -674,7 +718,30 @@ namespace PalMap
             //
             // 开始绘制指定的光标 <Surface> 到指定的 <Image>
             //
-            wbRenderer.WritePixels(rect, mc_sfMapTileCursor[iCursorType].pixels, mc_sfMapTileCursor[iCursorType].GetStride(), 0);
+            for (y = 0; y < Pal_Map.mc_wMapTileHeight; y++)
+            {
+                for (x = 0; x < Pal_Map.mc_wMapTileWidth; x++)
+                {
+                    //
+                    // 计算当前像素的内存地址
+                    //
+                    pixelOffset = (rect.Y * Pal_Map.mc_wMapWidth) + rect.X +  y * Pal_Map.mc_wMapWidth + x;
+
+                    //
+                    // 获取当前像素黑白值（位值）
+                    // 若为 0 则为透明色，直接跳过
+                    //
+                    if ((mc_dwMapTileCursor[y, iCursorType] & (1 << x)) == 0) continue;
+
+                    //
+                    // 设置颜色为对应色号
+                    //
+                    unsafe
+                    {
+                        ((BYTE*)wbRenderer.BackBuffer)[pixelOffset] = 0;
+                    }
+                }
+            }
         }
 
         public static void
@@ -719,7 +786,7 @@ namespace PalMap
             Image       dest_Image
         )
         {
-            INT             i, x, y, h, iPosX, iPosY;
+            INT             i, iPosX, iPosY;
             Pal_Object      poEvent;
 
             //

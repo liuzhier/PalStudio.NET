@@ -97,7 +97,7 @@ namespace PalStudio.NET
             PAL_RLEBlitToSurface(PAL_SpriteGetFrame(Pal_Map.TileSprite, m_iMapTileIndex), m_Surface, PAL_XY(0, 0));
 
             //
-            // 开始将 <Surface> 转换为 <Image>
+            // 开始将 <Surface> 绘制到 <Image>
             //
             VIDEO_DrawSurfaceToImage(m_Surface, MapTile_Image, Pal_Map.m_MapTileRect);
         }

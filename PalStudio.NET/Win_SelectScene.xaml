@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PalStudio.NET"
         mc:Ignorable="d"
-        Title="PalStudio.NET" Icon="/Resources/LOGO.ICO" WindowStyle="None"
-        SnapsToDevicePixels="True" WindowStartupLocation="CenterScreen"
+        Title="PalStudio.NET" Icon="/Resources/LOGO.ICO"
+        SnapsToDevicePixels="True" TextOptions.TextRenderingMode="ClearType" UseLayoutRounding="True"
+        WindowStyle="None" WindowStartupLocation="CenterScreen"
         Height="550" Width="800" MinHeight="550" MinWidth="800"
         MaxHeight="{x:Static SystemParameters.MaximizedPrimaryScreenHeight}"
-        MaxWidth="{x:Static SystemParameters.MaximizedPrimaryScreenWidth}" Loaded="Window_Loaded">
+        MaxWidth="{x:Static SystemParameters.MaximizedPrimaryScreenWidth}"
+        Loaded="Window_Loaded" KeyDown="Window_KeyDown">
     <Window.Resources>
         <Style TargetType="{x:Type Border}">
             <Setter Property="BorderBrush" Value="#1d1d1d" />
@@ -115,11 +117,13 @@
                         <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
                             <ScrollViewer Background="Black" HorizontalScrollBarVisibility="Visible">
                                 <Canvas x:Name="MapViewport_Canvas">
-                                    <Image x:Name="MapViewport_Selected_Image" Panel.ZIndex="4" />
-                                    <Image x:Name="MapViewport_Active_Image"   Panel.ZIndex="3" />
-                                    <Image x:Name="MapViewport_Event_Image"    Panel.ZIndex="2" />
-                                    <Image x:Name="MapViewport_Obstacle_Image" Panel.ZIndex="1" />
-                                    <Image x:Name="MapViewport_Image"          Panel.ZIndex="0" />
+                                    <Image x:Name="MapViewport_Selected_Image"               Panel.ZIndex="6" />
+                                    <Image x:Name="MapViewport_Active_Image"                 Panel.ZIndex="5" />
+                                    <Image x:Name="MapViewport_Event_Image"                  Panel.ZIndex="4" />
+                                    <Image x:Name="MapViewport_Obstacle_Image"               Panel.ZIndex="3" />
+                                    <Image x:Name="MapViewport_EventSpiritAndMaskTile_Image" Panel.ZIndex="2" />
+                                    <Image x:Name="MapViewport_High_Image"                   Panel.ZIndex="1" />
+                                    <Image x:Name="MapViewport_Low_Image"                    Panel.ZIndex="0" />
                                 </Canvas>
                             </ScrollViewer>
                         </Border>

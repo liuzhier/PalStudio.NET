@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:PalStudio.NET"
              mc:Ignorable="d" 
+             UseLayoutRounding="False"
              d:DesignHeight="NaN" d:DesignWidth="NaN">
     <Grid Background="#242424">
         <DockPanel DockPanel.Dock="Top" LastChildFill="True">

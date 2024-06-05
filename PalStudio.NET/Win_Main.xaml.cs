@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Windows.Media.Media3D;
+using System.Windows.Interop;
 
 using BOOL      = System.Boolean;
 using CHAR      = System.Char;
@@ -37,6 +38,7 @@ using static PalCommon.Pal_Common;
 using static PalVideo.Pal_Video;
 using static PalMap.Pal_Map;
 using static PalUtil.Pal_Util;
+using System.Reflection;
 
 namespace PalStudio.NET
 {
@@ -97,7 +99,10 @@ namespace PalStudio.NET
             //
             main((string[])NULL);
 
-            InitMapViewportSurface();
+            //
+            // 初始化 <Map Viewport Surface>
+            //
+            Pal_Map.InitMapViewportSurface();
 
             //
             // 初始缩放 <Map Viewport>
@@ -116,7 +121,7 @@ namespace PalStudio.NET
             }
 
             //
-            // 开始将 <Surface> 转换为 <Image>
+            // 开始将 <Surface> 绘制到 <Image>
             //
             //VIDEO_DrawSurfaceToImage(mc_sfMapTileCursor[0], MapViewport_Active_Image,   Pal_Map.m_MapTileRect);
             //VIDEO_DrawSurfaceToImage(mc_sfMapTileCursor[1], MapViewport_Selected_Image, Pal_Map.m_MapTileRect);
@@ -210,9 +215,9 @@ namespace PalStudio.NET
                 }
 
                 //
-                // 开始将 <Surface> 转换为 <Image>
+                // 开始将 <Surface> 绘制到 <Image>
                 //
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Surface,             MapViewport_Image,          Pal_Map.m_MapRect);
+                //VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Surface,             MapViewport_Image,          Pal_Map.m_MapRect);
                 VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,    MapViewport_Obstacle_Image, Pal_Map.m_MapRect);
                 VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Event_Surface,       MapViewport_Event_Image,    Pal_Map.m_MapRect);
 
@@ -233,8 +238,8 @@ namespace PalStudio.NET
                     //
                     WordMapBox_DockPanel.IsEnabled                  = TRUE;
                     WordMapBox_DockPanel.Opacity                    = 1;
-                    SaveMap_Button.IsEnabled                        = TRUE;
-                    SaveMap_Button.Opacity                          = 1;
+                    ScenecCtrl_Save_Button.IsEnabled                = TRUE;
+                    ScenecCtrl_Save_Button.Opacity                  = 1;
                     MapEditMode_ToolsButtonList.IsEnabled           = TRUE;
                     MapEditMode_ToolsButtonList.Opacity             = 1;
                     MapBlockDisplayMode_ToolsButtonList.IsEnabled   = TRUE;

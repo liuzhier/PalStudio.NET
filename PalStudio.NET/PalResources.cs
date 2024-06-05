@@ -32,18 +32,21 @@ namespace PalResources
         public BYTE[]   m_bySpirit;
         public PAL_POS  m_pos;
         public SHORT    m_sLayer;
+        public BYTE     m_byTag;
 
         private Pal_Resources() { }
 
         public Pal_Resources(
             BYTE[]          bySpirit,
             PAL_POS         pos,
-            SHORT           sLayer
+            SHORT           sLayer,
+            BYTE            byTag
         )
         {
             this.m_bySpirit = bySpirit;
             this.m_pos      = pos;
             this.m_sLayer   = sLayer;
+            this.m_byTag    = byTag;
         }
 
         public static BYTE[]

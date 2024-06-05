@@ -39,6 +39,7 @@
   <PropertyGroup>
     <ApplicationIcon>Resources\LOGO.ICO</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup />
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -72,6 +73,9 @@
     <Compile Include="PalUtil.cs" />
     <Compile Include="PalVideo.cs" />
     <Compile Include="PalYJ_1.cs" />
+    <Compile Include="UtilCtrl_ToolsButton.xaml.cs">
+      <DependentUpon>UtilCtrl_ToolsButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UtilCtrl_ItemList_Item.xaml.cs">
       <DependentUpon>UtilCtrl_ItemList_Item.xaml</DependentUpon>
     </Compile>
@@ -90,6 +94,10 @@
     <Compile Include="Win_SelectScene.xaml.cs">
       <DependentUpon>Win_SelectScene.xaml</DependentUpon>
     </Compile>
+    <Page Include="UtilCtrl_ToolsButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UtilCtrl_ItemList_Item.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -173,8 +181,8 @@
     <Resource Include="Resources\ToolBar_Event.png" />
     <Resource Include="Resources\ToolBar_EventBlock.png" />
     <Resource Include="Resources\ToolBar_EventBlock_Display.png" />
-    <Resource Include="Resources\ToolBar_High.png" />
-    <Resource Include="Resources\ToolBar_Low.png" />
+    <Resource Include="Resources\ToolBar_HighTile.png" />
+    <Resource Include="Resources\ToolBar_LowTile.png" />
     <Resource Include="Resources\ToolBar_New.png" />
     <Resource Include="Resources\ToolBar_NoPass.png" />
     <Resource Include="Resources\ToolBar_NoPassBlock.png" />

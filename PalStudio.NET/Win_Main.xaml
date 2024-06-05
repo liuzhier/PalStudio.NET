@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PalStudio.NET"
         mc:Ignorable="d"
-        Title="PalStudio.NET" Icon="/Resources/LOGO.ICO" WindowStyle="None"
-        SnapsToDevicePixels="True" WindowStartupLocation="CenterScreen"
+        Title="PalStudio.NET" Icon="/Resources/LOGO.ICO"
+        SnapsToDevicePixels="True" TextOptions.TextRenderingMode="ClearType" UseLayoutRounding="True"
+        WindowStyle="None" WindowStartupLocation="CenterScreen"
         Height="600" Width="800" MinHeight="600" MinWidth="800"
         MaxHeight="{x:Static SystemParameters.MaximizedPrimaryScreenHeight}"
-        MaxWidth="{x:Static SystemParameters.MaximizedPrimaryScreenWidth}" Loaded="Window_Loaded">
+        MaxWidth="{x:Static SystemParameters.MaximizedPrimaryScreenWidth}"
+        Loaded="Window_Loaded">
     <Window.Resources>
         <Style TargetType="{x:Type Border}">
             <Setter Property="BorderBrush" Value="#1d1d1d" />
@@ -60,114 +62,38 @@
                                 <DockPanel DockPanel.Dock="Top" LastChildFill="False" Height="48">
                                     <DockPanel.Resources>
                                         <Style TargetType="{x:Type Border}">
-                                            <Setter Property="BorderBrush" Value="WhiteSmoke" />
-                                            <Setter Property="BorderThickness" Value="1" />
-                                        </Style>
-                                        <Style TargetType="{x:Type Button}">
-                                            <Setter Property="Width" Value="40" />
-                                            <Setter Property="Height" Value="40" />
-                                            <Setter Property="Background" Value="Transparent" />
-                                        </Style>
-                                        <Style TargetType="{x:Type Image}">
-                                            <Setter Property="Width" Value="25" />
-                                            <Setter Property="Height" Value="25" />
+                                            <Setter Property="BorderBrush"     Value="Black" />
+                                            <Setter Property="BorderThickness" Value="1,0,0,0" />
+                                            <Setter Property="IsEnabled"       Value="False" />
+                                            <Setter Property="Opacity"         Value="0.4" />
                                         </Style>
                                     </DockPanel.Resources>
-                                    <Border DockPanel.Dock="Left" BorderThickness="1,0,0,0">
-                                        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                                            <DockPanel.Resources>
-                                                <Style TargetType="{x:Type Border}">
-                                                    <Setter Property="Margin" Value="3" />
-                                                    <Setter Property="Background" Value="Transparent" />
-                                                </Style>
-                                            </DockPanel.Resources>
-                                            <Border IsEnabled="False" Opacity="0.4">
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_New.png" />
-                                                </Button>
-                                            </Border>
-                                            <Border>
-                                                <Button Click="OpenScene_Button_Click">
-                                                    <Image Source="Resources\ToolBar_Open.png" />
-                                                </Button>
-                                            </Border>
-                                            <Border x:Name="SaveMap_Button" IsEnabled="False" Opacity="0.4">
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_Save.png" />
-                                                </Button>
-                                            </Border>
+                                    <Border x:Name="ScenecCtrl_ToolsButtonList" DockPanel.Dock="Left" BorderThickness ="0" IsEnabled ="True" Opacity="1">
+                                        <DockPanel LastChildFill="False">
+                                            <local:UtilCtrl_ToolsButton x:Name="ScenecCtrl_New_Button"  Tag="Resources\ToolBar_New.png"  IsEnabled="False" Opacity="0.4" />
+                                            <local:UtilCtrl_ToolsButton x:Name="ScenecCtrl_Open_Button" Tag="Resources\ToolBar_Open.png" />
+                                            <local:UtilCtrl_ToolsButton x:Name="ScenecCtrl_Save_Button" Tag="Resources\ToolBar_Save.png" IsEnabled="False" Opacity="0.4" />
                                         </DockPanel>
                                     </Border>
-                                    <Border x:Name="MapEditMode_ToolsButtonList" IsEnabled="False" Opacity="0.4" DockPanel.Dock="Left" BorderThickness="1,1,0,0">
-                                        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                                            <DockPanel.Resources>
-                                                <Style TargetType="{x:Type Border}">
-                                                    <Setter Property="Margin" Value="3" />
-                                                </Style>
-                                            </DockPanel.Resources>
-                                            <Border>
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_Select.png" />
-                                                </Button>
-                                            </Border>
-                                            <Border>
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_Edit.png" />
-                                                </Button>
-                                            </Border>
-                                            <Border>
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_Delete.png" />
-                                                </Button>
-                                            </Border>
+                                    <Border x:Name="MapEditMode_ToolsButtonList" DockPanel.Dock="Left">
+                                        <DockPanel LastChildFill="False">
+                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Select_Button" Tag="Resources\ToolBar_Select.png" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Edit_Button"   Tag="Resources\ToolBar_Edit.png" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Delete_Button" Tag="Resources\ToolBar_Delete.png" />
                                         </DockPanel>
                                     </Border>
-                                    <Border x:Name="MapBlockDisplayMode_ToolsButtonList" IsEnabled="False" Opacity="0.4" DockPanel.Dock="Left" BorderThickness="1,1,0,0">
-                                        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                                            <DockPanel.Resources>
-                                                <Style TargetType="{x:Type Border}">
-                                                    <Setter Property="Margin" Value="3" />
-                                                </Style>
-                                            </DockPanel.Resources>
-                                            <Border>
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_NoPass.png" />
-                                                </Button>
-                                            </Border>
-                                            <Border>
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_EventBlock.png" Width="NaN" Height="NaN" />
-                                                </Button>
-                                            </Border>
+                                    <Border x:Name="MapBlockDisplayMode_ToolsButtonList" DockPanel.Dock="Left">
+                                        <DockPanel LastChildFill="False">
+                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_NoPass_Button"     Tag="Resources\ToolBar_NoPass.png" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_EventBlock_Button" Tag="Resources\ToolBar_EventBlock.png" />
                                         </DockPanel>
                                     </Border>
-                                    <Border x:Name="MapLayerMode_ToolsButtonList" IsEnabled="False" Opacity="0.4" DockPanel.Dock="Left" BorderThickness="1,1,1,0" >
-                                        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                                            <DockPanel.Resources>
-                                                <Style TargetType="{x:Type Border}">
-                                                    <Setter Property="Margin" Value="3" />
-                                                </Style>
-                                            </DockPanel.Resources>
-                                            <Border>
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_Low.png" />
-                                                </Button>
-                                            </Border>
-                                            <Border>
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_High.png" />
-                                                </Button>
-                                            </Border>
-                                            <Border>
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_NoPassBlock.png" />
-                                                </Button>
-                                            </Border>
-                                            <Border>
-                                                <Button>
-                                                    <Image Source="Resources\ToolBar_Event.png" Width="NaN" Height="NaN" />
-                                                </Button>
-                                            </Border>
+                                    <Border x:Name="MapLayerMode_ToolsButtonList" DockPanel.Dock="Left">
+                                        <DockPanel LastChildFill="False">
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_LowTile_Button"     Tag="Resources\ToolBar_LowTile.png" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_HighTile_Button"    Tag="Resources\ToolBar_HighTile.png" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_NoPassBlock_Button" Tag="Resources\ToolBar_NoPassBlock.png" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_Event_Button"       Tag="Resources\ToolBar_Event.png" />
                                         </DockPanel>
                                     </Border>
                                 </DockPanel>
@@ -255,17 +181,13 @@
                                             <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
                                                 <ScrollViewer Background="Black" HorizontalScrollBarVisibility="Visible">
                                                     <Canvas x:Name="MapViewport_Canvas">
-                                                        <Canvas.Resources>
-                                                            <Style TargetType="{x:Type Image}">
-                                                                <Setter Property="Stretch" Value="UniformToFill" />
-                                                                <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor" />
-                                                            </Style>
-                                                        </Canvas.Resources>
-                                                        <Image x:Name="MapViewport_Selected_Image" Panel.ZIndex="4" />
-                                                        <Image x:Name="MapViewport_Active_Image"   Panel.ZIndex="3" />
-                                                        <Image x:Name="MapViewport_Event_Image"    Panel.ZIndex="2" />
-                                                        <Image x:Name="MapViewport_Obstacle_Image" Panel.ZIndex="1" />
-                                                        <Image x:Name="MapViewport_Image"          Panel.ZIndex="0" />
+                                                        <Image x:Name="MapViewport_Selected_Image"               Panel.ZIndex="6" />
+                                                        <Image x:Name="MapViewport_Active_Image"                 Panel.ZIndex="5" />
+                                                        <Image x:Name="MapViewport_Event_Image"                  Panel.ZIndex="4" />
+                                                        <Image x:Name="MapViewport_Obstacle_Image"               Panel.ZIndex="3" />
+                                                        <Image x:Name="MapViewport_EventSpiritAndMaskTile_Image" Panel.ZIndex="2" />
+                                                        <Image x:Name="MapViewport_High_Image"                   Panel.ZIndex="1" />
+                                                        <Image x:Name="MapViewport_Low_Image"                    Panel.ZIndex="0" />
                                                     </Canvas>
                                                 </ScrollViewer>
                                             </Border>
