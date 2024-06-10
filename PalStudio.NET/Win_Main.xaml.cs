@@ -15,6 +15,7 @@ using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Windows.Media.Media3D;
 using System.Windows.Interop;
+using System.Reflection;
 
 using BOOL      = System.Boolean;
 using CHAR      = System.Char;
@@ -26,6 +27,7 @@ using UINT      = System.UInt32;
 using SDWORD    = System.Int32;
 using DWORD     = System.UInt32;
 using LPSTR     = System.String;
+using PAL_POS   = System.UInt32;
 
 using PalMap;
 using PalVideo;
@@ -38,7 +40,8 @@ using static PalCommon.Pal_Common;
 using static PalVideo.Pal_Video;
 using static PalMap.Pal_Map;
 using static PalUtil.Pal_Util;
-using System.Reflection;
+using static PalCfg.Pal_Cfg;
+using static PalConfig.Pal_Config;
 
 namespace PalStudio.NET
 {
@@ -49,6 +52,8 @@ namespace PalStudio.NET
     {
         private static BOOL             m_fCanClose = TRUE; 
         private static INT              m_iThisMapTile = -1, m_iMapViewportScale = 200;
+        private static WORD             m_wActivePosX = 0, m_wActivePosY = 0, m_wSelectPosX = 0, m_wSelectPosY = 0;
+        private static double           m_douViewportWidth = 0, m_douViewportHeight = 0;
         private static ScaleTransform   m_stMapViewport_ScaleTransform = new ScaleTransform();
 
         private static Win_SelectScene  win_SelectScene = new Win_SelectScene();
@@ -105,6 +110,12 @@ namespace PalStudio.NET
             Pal_Map.InitMapViewportSurface();
 
             //
+            // 备份 <Viewport Size>
+            //
+            m_douViewportWidth  = MapViewport_ScrollViewer.ViewportWidth;
+            m_douViewportHeight = MapViewport_ScrollViewer.ViewportHeight;
+
+            //
             // 初始缩放 <Map Viewport>
             //
             UTIL_MapViewportScale_TextChanged(m_iMapViewportScale, MapViewport_Canvas, m_stMapViewport_ScaleTransform, MapViewportScale_TextBox);
@@ -155,10 +166,19 @@ namespace PalStudio.NET
             }
         }
 
-        private void OpenScene_Button_Click(object sender, RoutedEventArgs e)
+        private void OpenScene_Button_Click(object sender, MouseButtonEventArgs e)
         {
             INT                         i, nMapTiles;
+            LPSTR                       lpszMapName;
             UtilCtrl_MapTileList_Item   utilCtrl_MapTileList_Item;
+
+            if (e.ChangedButton != MouseButton.Left)
+            {
+                //
+                // 如果不是左键则 <Pass>
+                //
+                return;
+            }
 
             //
             // 子窗口“关闭”前，禁止用户与主窗口互动
@@ -217,9 +237,11 @@ namespace PalStudio.NET
                 //
                 // 开始将 <Surface> 绘制到 <Image>
                 //
-                //VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Surface,             MapViewport_Image,          Pal_Map.m_MapRect);
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,    MapViewport_Obstacle_Image, Pal_Map.m_MapRect);
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Event_Surface,       MapViewport_Event_Image,    Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Low_Surface,                     MapViewport_Low_Image,                      Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_High_Surface,                    MapViewport_High_Image,                     Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_EventSpiritAndMaskTile_Surface,  MapViewport_EventSpiritAndMaskTile_Image,   Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,                MapViewport_Obstacle_Image,                 Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Event_Surface,                   MapViewport_Event_Image,                    Pal_Map.m_MapRect);
 
                 //
                 // 绘制 <障碍块>
@@ -230,6 +252,13 @@ namespace PalStudio.NET
                 // 绘制 <事件块>
                 //
                 Pal_Map.DrawEventBlock(MapViewport_Event_Image);
+
+                //
+                // 将 <场景名称> 显示到左下角状态栏并添加 <ToolTip> 鼠标滑上提示
+                //
+                lpszMapName                 = Pal_Cfg_GetCfgNodeItem(lpszSceneDesc, $"0x{Pal_Map.m_iSceneNum + 1:X4}").lpszTitle;
+                SceneName_TextBlock.Text    = $"{Pal_Map.m_iMapNum}({Pal_Map.m_iMapNum:X}) ＝＞ {Pal_Map.m_iSceneNum + 1:D}({Pal_Map.m_iSceneNum + 1:X})：{lpszMapName}";
+                SceneName_TextBlock.ToolTip = SceneName_TextBlock.Text;
 
                 if (MapViewport_Border.Visibility != Visibility.Visible)
                 {
@@ -247,12 +276,19 @@ namespace PalStudio.NET
                     MapLayerMode_ToolsButtonList.IsEnabled          = TRUE;
                     MapLayerMode_ToolsButtonList.Opacity            = 1;
                     MapViewportScale_TextBox.IsEnabled              = TRUE;
+                    MapViewport_Selected_Image.IsEnabled            = TRUE;
+                    MapViewport_Active_Image.IsEnabled              = TRUE;
 
                     //
                     // 删除粉背景提示控件
                     //
                     MapViewportBox_DockPanel.Children.Remove(Tip_NotSelected_DockPanel);
                     MapViewport_Border.Visibility = Visibility.Visible;
+
+                    VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Active_Surface, MapViewport_Active_Image, Pal_Map.m_MapTileRect);
+                    VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Selected_Surface, MapViewport_Selected_Image, Pal_Map.m_MapTileRect);
+                    Pal_Map.DrawMapTileCursor(MapTileCursorColorType.Active, MapViewport_Active_Image, PAL_XY(0, 0));
+                    Pal_Map.DrawMapTileCursor(MapTileCursorColorType.Selected, MapViewport_Selected_Image, PAL_XY(0, 0));
                 }
             }
         }
@@ -308,8 +344,113 @@ namespace PalStudio.NET
             MapTilesList_DockPanel_MouseDown(NULL, (MouseButtonEventArgs)NULL);
         }
 
+        private void ThisMapTileIndex_TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            INT         iThisMapTile;
+            TextBox     textBox = sender as TextBox;
+
+            if (textBox != NULL)
+            {
+                //
+                // 判断用户输入的数值是否合法
+                //
+                if ((iThisMapTile = UTIL_TextBoxTextIsMatch(textBox, m_iThisMapTile)) == 0x7FFFFFFF)
+                {
+                    //
+                    // 用户输入了错误的百分值
+                    //
+                    goto tagEnd;
+                }
+
+                if (iThisMapTile >= 0)
+                {
+                    //
+                    // 用户输入百分值值正确
+                    // 直接退出函数
+                    //
+                    return;
+                }
+
+tagEnd:
+                //
+                // 撤回到上次输入的数值
+                //
+                textBox.Text = m_iThisMapTile.ToString();
+            }
+        }
+
         private void MapViewportScale_TextBox_TextChanged(object sender, TextChangedEventArgs e) => UTIL_MapViewportScale_TextBox_TextChanged(sender, ref m_iMapViewportScale, MapViewport_Canvas, m_stMapViewport_ScaleTransform);
 
         private void MapViewportScale_TextBox_LostFocus(object sender, RoutedEventArgs e) => UTIL_MapViewportScale_TextBox_LostFocus(sender, m_iMapViewportScale, MapViewport_Canvas, m_stMapViewport_ScaleTransform);
+
+        private void MapViewport_Moving_Image_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point           point, currentPoint;
+            Thickness       margin;
+            double          left, top, X, Y;
+            WORD            x, y, h;
+            PAL_POS         posActiveCursor;
+
+            //
+            // 获取元素的最终布局位置
+            //
+            point = MapViewport_ScrollViewer.TransformToAncestor(this).Transform(new Point(0, 0));
+
+            //
+            // 获取元素的margin
+            //
+            margin = MapViewport_ScrollViewer.Margin;
+
+            //
+            // 计算相对于窗口的位置
+            //
+            left = point.X + margin.Left;
+            top  = point.Y + margin.Top;
+
+            //
+            // 获取当前鼠标位置
+            //
+            currentPoint    = e.GetPosition(null);
+
+            //
+            // 获取 <Scene> 缩放前的坐标
+            //
+            m_wActivePosX = (WORD)((MapViewport_ScrollViewer.HorizontalOffset + currentPoint.X - left) / (m_iMapViewportScale / 100.00));
+            m_wActivePosY = (WORD)((MapViewport_ScrollViewer.VerticalOffset   + currentPoint.Y - top)  / (m_iMapViewportScale / 100.00));
+
+            //
+            // <点坐标> 转 <块坐标>
+            //
+            Pal_Map.PAL_POS_TO_XYH(PAL_XY(m_wActivePosX, m_wActivePosY), out x, out y, out h);
+            posActiveCursor = Pal_Map.PAL_XYH_TO_POS(x, y, h);
+
+            m_wActivePosX = PAL_X(posActiveCursor);
+            m_wActivePosY = PAL_Y(posActiveCursor);
+
+            //
+            // 将 <块坐标> 显示在状态栏
+            //
+            ActiveCursorPosXB_TextBlock.Text    = $"{x:D}({x:X})";
+            ActiveCursorPosYB_TextBlock.Text    = $"{y:D}({y:X})";
+            ActiveCursorPosHB_TextBlock.Text    = h.ToString();
+            ActiveCursorPosX_TextBlock.Text     = $"{m_wActivePosX:D}({m_wActivePosX:X})";
+            ActiveCursorPosY_TextBlock.Text     = $"{m_wActivePosY:D}({m_wActivePosY:X})";
+
+            //
+            // 更新 <Active Cursor> 的位置
+            //
+            MapViewport_Active_Image.Margin = new Thickness(m_wActivePosX * (m_iMapViewportScale / 100.00), m_wActivePosY * (m_iMapViewportScale / 100.00), 0, 0);
+        }
+
+        private void MapViewport_Canvas_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            m_wSelectPosX = m_wActivePosX;
+            m_wSelectPosY = m_wActivePosY;
+
+            //
+            // 更新 <Active Cursor> 的位置
+            //
+            MapViewport_Selected_Image.Margin = new Thickness(m_wSelectPosX * (m_iMapViewportScale / 100.00), m_wSelectPosY * (m_iMapViewportScale / 100.00), 0, 0);
+        }
     }
 }

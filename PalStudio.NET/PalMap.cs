@@ -101,13 +101,34 @@ namespace PalMap
             { 0x0003C000, 0x0003C000, 0x0003C000, 0x0003C000 },
         };
 
+        //The width of the horizontal slice of Tile at different y-coordinates
+        private static WORD[,] SegmentTable = new WORD[16, 32]
+        {
+            { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, }, // 0
+            { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, }, // 1
+            { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, }, // 2
+            { 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, }, // 3
+            { 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, }, // 4
+            { 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, }, // 5
+            { 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, }, // 6
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, }, // 7
+            { 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, }, // 8
+            { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, }, // 9
+            { 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, }, // 10
+            { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, }, // 11
+            { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, }, // 12
+            { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, }, // 13
+            { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, }, // 14
+            { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, }, // 14
+        };
+
         public const WORD   mc_wMapWidth = 2064, mc_wMapHeight = 2055, mc_wMapTileWidth = 32, mc_wMapTileHeight = 15, mc_wOffsetX_H = 16, mc_wOffsetY_H = 8, mc_wMinSceneIndex = 1;
         public const INT    mc_iMapViewportScaleMin = 100, mc_iMapViewportScaleMax = 999;
 
 
         public static readonly PAL_Rect m_MapRect       = new PAL_Rect(0, 0, mc_wMapWidth,      mc_wMapHeight);
         public static readonly PAL_Rect m_MapTileRect   = new PAL_Rect(0, 0, mc_wMapTileWidth,  mc_wMapTileHeight);
-        public static Surface           m_MapViewport_Low_Surface, m_MapViewport_High_Surface, m_MapViewport_EventSpiritAndMaskTile_Surface, m_MapViewport_Obstacle_Surface, m_MapViewport_Event_Surface;
+        public static Surface           m_MapViewport_Low_Surface, m_MapViewport_High_Surface, m_MapViewport_EventSpiritAndMaskTile_Surface, m_MapViewport_Obstacle_Surface, m_MapViewport_Event_Surface, m_MapViewport_Active_Surface, m_MapViewport_Selected_Surface;
 
         public static List<Surface>     mc_sfMapTileCursor = new List<Surface>();
 
@@ -170,11 +191,13 @@ namespace PalMap
             //
             // 初始化 <Map Viewport Surface>
             //
-            m_MapViewport_Low_Surface                       = new Surface(Pal_Map.mc_wMapWidth, Pal_Map.mc_wMapHeight);
-            m_MapViewport_High_Surface                      = new Surface(Pal_Map.mc_wMapWidth, Pal_Map.mc_wMapHeight);
-            m_MapViewport_EventSpiritAndMaskTile_Surface    = new Surface(Pal_Map.mc_wMapWidth, Pal_Map.mc_wMapHeight);
-            m_MapViewport_Obstacle_Surface                  = new Surface(Pal_Map.mc_wMapWidth, Pal_Map.mc_wMapHeight);
-            m_MapViewport_Event_Surface                     = new Surface(Pal_Map.mc_wMapWidth, Pal_Map.mc_wMapHeight);
+            m_MapViewport_Low_Surface                       = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_High_Surface                      = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_EventSpiritAndMaskTile_Surface    = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_Obstacle_Surface                  = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_Event_Surface                     = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_Active_Surface                    = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
+            m_MapViewport_Selected_Surface                  = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
 
             //
             // 初始化 <Map Tile Cursor> （主要是为了初始化它们的调色板）
@@ -184,8 +207,8 @@ namespace PalMap
             //
             // 重设 <额外信息视图> 调色板
             //
-            //m_MapViewport_Active_Surface.palette    = mc_sfMapTileCursor[0].palette;
-            //m_MapViewport_Selected_Surface.palette  = mc_sfMapTileCursor[1].palette;
+            m_MapViewport_Active_Surface.palette    = mc_sfMapTileCursor[0].palette;
+            m_MapViewport_Selected_Surface.palette  = mc_sfMapTileCursor[1].palette;
             m_MapViewport_Obstacle_Surface.palette  = mc_sfMapTileCursor[2].palette;
             m_MapViewport_Event_Surface.palette     = mc_sfMapTileCursor[3].palette;
         }
@@ -725,7 +748,7 @@ namespace PalMap
                     //
                     // 计算当前像素的内存地址
                     //
-                    pixelOffset = (rect.Y * Pal_Map.mc_wMapWidth) + rect.X +  y * Pal_Map.mc_wMapWidth + x;
+                    pixelOffset = (INT)((rect.Y * wbRenderer.Width) + rect.X +  y * wbRenderer.Width + x);
 
                     //
                     // 获取当前像素黑白值（位值）
@@ -803,6 +826,131 @@ namespace PalMap
                 iPosY   = poEvent.GetItem(i, lpszY);
 
                 Pal_Map.DrawMapTileCursor(MapTileCursorColorType.Event, dest_Image, PAL_XY(iPosX, iPosY));
+            }
+        }
+
+        public static PAL_POS
+        PAL_XYH_TO_POS(
+            WORD        x,
+            WORD        y,
+            WORD        h
+        ) => PAL_XY(x * 32 + h * 16, y * 16 + h * 8);
+
+        public static void
+        PAL_POS_TO_XYH(
+            PAL_POS     pos,
+        out WORD        x,
+        out WORD        y,
+        out WORD        h
+        )
+        {
+            WORD Segment, SegmentX, SegmentY;
+
+            if (((SHORT)PAL_X(pos)) < 0 || ((SHORT)PAL_Y(pos)) < 0)
+            {
+                x   = 0xFFFF;
+                y   = 0xFFFF;
+                h   = 1;
+
+                return;
+            }
+
+            SegmentX    = (WORD)(PAL_X(pos) % 32);
+            SegmentY    = (WORD)(PAL_Y(pos) % 16);
+            Segment     = SegmentTable[SegmentY, SegmentX];
+
+            x = (BYTE)(PAL_X(pos) / 32);
+            y = (BYTE)(PAL_Y(pos) / 16);
+            h           = 0;
+
+            if (Segment != 0)
+            {
+                if (((SHORT)(PAL_X(pos) - 16)) < 0 || ((SHORT)(PAL_Y(pos) - 8)) < 0)
+                {
+                    x = 0xFFFF;
+                    y = 0xFFFF;
+                    h = 1;
+
+                    return;
+                }
+
+                SegmentX    = (WORD)((PAL_X(pos) - 16) % 32);
+                SegmentY    = (WORD)((PAL_Y(pos) - 8) % 16);
+                Segment     = SegmentTable[SegmentY, SegmentX];
+
+                x = (BYTE)((PAL_X(pos) - 16) / 32);
+                y = (BYTE)((PAL_Y(pos) - 8) / 16);
+                h           = 1;
+            }
+
+            switch (Segment)
+            {
+                case 1:
+                    {
+                        if (h != 0)
+                        {
+                            y  += 1;
+                            h   = 0;
+                        }
+                        else
+                        {
+                            x  -= 1;
+                            h   = 1;
+                        }
+                    }
+                    break;
+
+                case 2:
+                    {
+                        if (h != 0)
+                        {
+                            h   = 0;
+                        }
+                        else
+                        {
+                            x  -= 1;
+                            y  -= 1;
+                            h   = 1;
+                        }
+                    }
+                    break;
+
+                case 3:
+                    {
+                        if (h != 0)
+                        {
+                            x  += 1;
+                            h   = 0;
+                        }
+                        else
+                        {
+                            y  -= 1;
+                            h   = 1;
+                        }
+                    }
+                    break;
+
+                case 4:
+                    {
+                        if (h != 0)
+                        {
+                            x  += 1;
+                            y  += 1;
+                            h   = 0;
+                        }
+                        else
+                        {
+                            h   = 1;
+                        }
+                    }
+                    break;
+
+                case 0:
+                default:
+                    {
+
+                    }
+                    break;
             }
         }
     }

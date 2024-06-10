@@ -14,6 +14,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using static PalGlobal.Pal_Global;
+
 namespace PalStudio.NET
 {
     /// <summary>
@@ -28,11 +30,26 @@ namespace PalStudio.NET
 
         private void UtilCtrl_ToolsButton_Loaded(object sender, RoutedEventArgs e)
         {
-            // 创建BitmapImage对象
-            BitmapImage image = new BitmapImage();
-
-            // 将Image控件的Source属性设置为BitmapImage对象
+            //
+            // 绘制 <高祖控件> 的 <Tag> 中指定的图像
+            //
             ToolsButton_Image.Source = new BitmapImage(new Uri((string)this.Tag, UriKind.Relative));
+
+            //
+            // 若 <高祖控件> 的 <ZIndex> 为 <-1> ，则将图像尺寸设置为 <自适应>
+            //
+            if (Panel.GetZIndex(this) == -1) ToolsButton_Image.Margin = new Thickness(0);
+        }
+
+        public void
+        SimulateMouseDown()
+        {
+            this.OnPreviewMouseDown((MouseButtonEventArgs)NULL);
+        }
+
+        private void ToolsButton_Button_Click(object sender, RoutedEventArgs e)
+        {
+            SimulateMouseDown();
         }
     }
 }

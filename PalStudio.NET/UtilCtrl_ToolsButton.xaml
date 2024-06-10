@@ -11,23 +11,24 @@
              >
     <Grid>
         <Grid.Resources>
+            <Style TargetType="{x:Type Border}">
+                <Setter Property="Margin" Value="3" />
+                <Setter Property="Background" Value="Transparent" />
+            </Style>
             <Style TargetType="{x:Type Button}">
                 <Setter Property="Width" Value="40" />
                 <Setter Property="Height" Value="40" />
                 <Setter Property="Background" Value="Transparent" />
             </Style>
-            <Style TargetType="{x:Type Border}">
-                <Setter Property="Margin" Value="3" />
-                <Setter Property="Background" Value="Transparent" />
-            </Style>
             <Style TargetType="{x:Type Image}">
                 <Setter Property="Margin" Value="5" />
                 <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor" />
+                <Setter Property="Stretch" Value="UniformToFill" />
             </Style>
         </Grid.Resources>
         <Border>
-            <Button>
-                <Image x:Name="ToolsButton_Image" Source="Resources\ToolBar_Select.png" />
+            <Button x:Name="ToolsButton_Button" Click="ToolsButton_Button_Click">
+                <Image x:Name="ToolsButton_Image" />
             </Button>
         </Border>
     </Grid>

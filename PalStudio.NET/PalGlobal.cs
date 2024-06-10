@@ -279,8 +279,8 @@ namespace PalGlobal
 
         //public static readonly LPSTR        lpszCfgName     = "PalStudio.NET.ini";
         //public static readonly LPSTR        lpszGaemPath    = $".{PathDSC}";
-        public static readonly LPSTR        lpszCfgName     = $"F:{PathDSC}liuzhier{PathDSC}PalStudio.NET{PathDSC}docs{PathDSC}PalStudio.NET.ini.example";
-        public static readonly LPSTR        lpszGaemPath    = $"F:{PathDSC}PALDOS2{PathDSC}pal";
+        public static readonly LPSTR        lpszCfgName     = $"F:{PathDSC}liuzhier{PathDSC}.NET{PathDSC}PalStudio.NET{PathDSC}docs{PathDSC}PalStudio.NET.ini.example";
+        public static readonly LPSTR        lpszGaemPath    = $"F:{PathDSC}PALDOS{PathDSC}pal";
 
         public const  INT                   SIZE_Of_QWORD       = sizeof(QWORD);
 

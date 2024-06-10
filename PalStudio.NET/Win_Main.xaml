@@ -70,75 +70,81 @@
                                     </DockPanel.Resources>
                                     <Border x:Name="ScenecCtrl_ToolsButtonList" DockPanel.Dock="Left" BorderThickness ="0" IsEnabled ="True" Opacity="1">
                                         <DockPanel LastChildFill="False">
-                                            <local:UtilCtrl_ToolsButton x:Name="ScenecCtrl_New_Button"  Tag="Resources\ToolBar_New.png"  IsEnabled="False" Opacity="0.4" />
-                                            <local:UtilCtrl_ToolsButton x:Name="ScenecCtrl_Open_Button" Tag="Resources\ToolBar_Open.png" />
-                                            <local:UtilCtrl_ToolsButton x:Name="ScenecCtrl_Save_Button" Tag="Resources\ToolBar_Save.png" IsEnabled="False" Opacity="0.4" />
+                                            <local:UtilCtrl_ToolsButton x:Name="ScenecCtrl_New_Button"  Tag="Resources\ToolBar_New.png"  ToolTip="新建场景"         IsEnabled="False" Opacity="0.4" />
+                                            <local:UtilCtrl_ToolsButton x:Name="ScenecCtrl_Open_Button" Tag="Resources\ToolBar_Open.png" ToolTip="选择欲编辑的场景" PreviewMouseDown="OpenScene_Button_Click" />
+                                            <local:UtilCtrl_ToolsButton x:Name="ScenecCtrl_Save_Button" Tag="Resources\ToolBar_Save.png" ToolTip="保存对场景的修改" IsEnabled="False" Opacity="0.4" />
                                         </DockPanel>
                                     </Border>
                                     <Border x:Name="MapEditMode_ToolsButtonList" DockPanel.Dock="Left">
                                         <DockPanel LastChildFill="False">
-                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Select_Button" Tag="Resources\ToolBar_Select.png" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Edit_Button"   Tag="Resources\ToolBar_Edit.png" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Delete_Button" Tag="Resources\ToolBar_Delete.png" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Select_Button" Tag="Resources\ToolBar_Select.png" ToolTip="模式：选择地图上的元素" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Edit_Button"   Tag="Resources\ToolBar_Edit.png"   ToolTip="模式：编辑地图上的元素" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Delete_Button" Tag="Resources\ToolBar_Delete.png" ToolTip="模式：清除地图上的元素" />
                                         </DockPanel>
                                     </Border>
                                     <Border x:Name="MapBlockDisplayMode_ToolsButtonList" DockPanel.Dock="Left">
                                         <DockPanel LastChildFill="False">
-                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_NoPass_Button"     Tag="Resources\ToolBar_NoPass.png" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_EventBlock_Button" Tag="Resources\ToolBar_EventBlock.png" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_NoPass_Button"     Tag="Resources\ToolBar_NoPass.png"     ToolTip="显示/隐藏块：障碍块" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_EventBlock_Button" Tag="Resources\ToolBar_EventBlock.png" ToolTip="显示/隐藏块：事件块" Panel.ZIndex="-1" />
                                         </DockPanel>
                                     </Border>
                                     <Border x:Name="MapLayerMode_ToolsButtonList" DockPanel.Dock="Left">
                                         <DockPanel LastChildFill="False">
-                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_LowTile_Button"     Tag="Resources\ToolBar_LowTile.png" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_HighTile_Button"    Tag="Resources\ToolBar_HighTile.png" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_NoPassBlock_Button" Tag="Resources\ToolBar_NoPassBlock.png" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_Event_Button"       Tag="Resources\ToolBar_Event.png" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_LowTile_Button"     Tag="Resources\ToolBar_LowTile.png"     ToolTip="编辑 Tile：底层" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_HighTile_Button"    Tag="Resources\ToolBar_HighTile.png"    ToolTip="编辑 Tile：高层"/>
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_NoPassBlock_Button" Tag="Resources\ToolBar_NoPassBlock.png" ToolTip="编辑 Tile：障碍层" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_Event_Button"       Tag="Resources\ToolBar_Event.png"       ToolTip="编辑 Tile：事件层" Panel.ZIndex="-1" />
                                         </DockPanel>
                                     </Border>
                                 </DockPanel>
                                 <DockPanel DockPanel.Dock="Top" LastChildFill="True">
                                     <DockPanel LastChildFill="False" DockPanel.Dock="Bottom" Height="20" Background="Pink">
                                         <StatusBar Width="Auto">
+                                            <StatusBar.Resources>
+                                                <Style TargetType="{x:Type TextBlock}">
+                                                    <Setter Property="FontFamily" Value="New Song" />
+                                                    <Setter Property="FontSize"   Value="14" />
+                                                </Style>
+                                            </StatusBar.Resources>
                                             <StatusBarItem Width="250" Background="LightGray">
-                                                <TextBlock Text="请选择欲编辑的场景" />
+                                                <TextBlock x:Name="SceneName_TextBlock" Text="请选择欲编辑的场景" />
                                             </StatusBarItem>
                                             <StatusBarItem Background="Pink">
-                                                <TextBlock Text="BX: " />
+                                                <TextBlock Text="XB: " />
                                             </StatusBarItem>
                                             <StatusBarItem Width="50" Background="pink">
-                                                <TextBlock Text="--(---)" />
+                                                <TextBlock x:Name="ActiveCursorPosXB_TextBlock" Text="--(---)" />
                                             </StatusBarItem>
                                             <StatusBarItem Background="Chocolate">
-                                                <TextBlock Text="BY: " />
+                                                <TextBlock Text="YB: " />
                                             </StatusBarItem>
                                             <StatusBarItem Width="50" Background="Chocolate">
-                                                <TextBlock Text="--(---)" />
+                                                <TextBlock x:Name="ActiveCursorPosYB_TextBlock" Text="--(---)" />
                                             </StatusBarItem>
                                             <StatusBarItem Background="Pink">
-                                                <TextBlock Text="BH: " />
+                                                <TextBlock Text="HB: " />
                                             </StatusBarItem>
                                             <StatusBarItem Width="50" Background="Pink">
-                                                <TextBlock Text="-" />
+                                                <TextBlock x:Name="ActiveCursorPosHB_TextBlock" Text="-" />
                                             </StatusBarItem>
                                             <StatusBarItem Background="Chocolate">
                                                 <TextBlock Text="X: " />
                                             </StatusBarItem>
                                             <StatusBarItem Width="80" Background="Chocolate">
-                                                <TextBlock Text="----(-----)" />
+                                                <TextBlock x:Name="ActiveCursorPosX_TextBlock" Text="----(-----)" />
                                             </StatusBarItem>
                                             <StatusBarItem Background="Pink">
                                                 <TextBlock Text="Y: " />
                                             </StatusBarItem>
                                             <StatusBarItem Width="80" Background="Pink">
-                                                <TextBlock Text="----(-----)" />
+                                                <TextBlock x:Name="ActiveCursorPosY_TextBlock" Text="----(-----)" />
                                             </StatusBarItem>
                                             <StatusBarItem Background="Chocolate">
                                                 <TextBlock Text="缩放: " />
                                             </StatusBarItem>
                                             <StatusBarItem Background="Chocolate">
                                                 <TextBox x:Name="MapViewportScale_TextBox" IsEnabled="False" Width="30" Background="Pink" Foreground="Crimson" HorizontalAlignment="Center" VerticalAlignment="Center" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="MapViewportScale_TextBox_TextChanged" LostFocus="MapViewportScale_TextBox_LostFocus">
-                                                    
+
                                                 </TextBox>
                                             </StatusBarItem>
                                             <StatusBarItem Background="Chocolate">
@@ -159,7 +165,7 @@
                                                                 <Label x:Name="ThisMapTileIndex_Label" DockPanel.Dock="Top" Foreground="Crimson" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                                     未选择
                                                                 </Label>
-                                                                <TextBox x:Name="ThisMapTileIndex_TextBox" DockPanel.Dock="Top" Height="30" FontSize="20" Foreground="Crimson" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="ThisMapTileIndex_TextBox_TextChanged">
+                                                                <TextBox x:Name="ThisMapTileIndex_TextBox" DockPanel.Dock="Top" Height="30" FontSize="20" Foreground="Crimson" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="ThisMapTileIndex_TextBox_TextChanged" LostFocus="ThisMapTileIndex_TextBox_LostFocus">
                                                                     
                                                                 </TextBox>
                                                             </DockPanel>
@@ -179,10 +185,10 @@
                                         </DockPanel>
                                         <DockPanel x:Name="MapViewportBox_DockPanel" LastChildFill="True" DockPanel.Dock="Left">
                                             <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
-                                                <ScrollViewer Background="Black" HorizontalScrollBarVisibility="Visible">
-                                                    <Canvas x:Name="MapViewport_Canvas">
-                                                        <Image x:Name="MapViewport_Selected_Image"               Panel.ZIndex="6" />
-                                                        <Image x:Name="MapViewport_Active_Image"                 Panel.ZIndex="5" />
+                                                <ScrollViewer x:Name="MapViewport_ScrollViewer" Background="Black" HorizontalScrollBarVisibility="Visible">
+                                                    <Canvas x:Name="MapViewport_Canvas" MouseMove="MapViewport_Moving_Image_MouseMove" MouseDown="MapViewport_Canvas_MouseDown">
+                                                        <Image x:Name="MapViewport_Selected_Image"               Panel.ZIndex="6" IsEnabled="False" />
+                                                        <Image x:Name="MapViewport_Active_Image"                 Panel.ZIndex="5" IsEnabled="False" />
                                                         <Image x:Name="MapViewport_Event_Image"                  Panel.ZIndex="4" />
                                                         <Image x:Name="MapViewport_Obstacle_Image"               Panel.ZIndex="3" />
                                                         <Image x:Name="MapViewport_EventSpiritAndMaskTile_Image" Panel.ZIndex="2" />
