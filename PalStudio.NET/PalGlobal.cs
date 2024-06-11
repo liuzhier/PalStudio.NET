@@ -35,6 +35,7 @@ using static PalConfig.Pal_Config;
 using static PalCfg.Pal_Cfg;
 using static PalCommon.Pal_Common;
 using static PalResources.Pal_Resources;
+using System.Windows.Input;
 
 namespace PalGlobal
 {
@@ -269,10 +270,13 @@ namespace PalGlobal
 
     public class Pal_Global
     {
-        public const object NULL  = null;
-        public const BOOL   TRUE  = true;
-        public const BOOL   FALSE = false;
-        
+        public const object NULL        = null;
+        public const BOOL   TRUE        = true;
+        public const BOOL   FALSE       = false;
+        public const INT    PALSN_ERROR = 0x7FFFFFFF;
+
+        public static MouseButtonEventArgs SimulateMouseDownEvent = new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left);
+
         public static readonly Encoding     GB2312  = Encoding.GetEncoding("GB2312");
         public static readonly CHAR         PathDSC = (Environment.OSVersion.Platform == PlatformID.Win32NT) ? '\\' : '/';
         public static readonly LPSTR        NewLine = Environment.NewLine;

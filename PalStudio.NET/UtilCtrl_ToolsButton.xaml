@@ -7,8 +7,7 @@
              mc:Ignorable="d"
              UseLayoutRounding="False"
              d:DesignHeight="NaN" d:DesignWidth="NaN"
-             Loaded="UtilCtrl_ToolsButton_Loaded"
-             >
+             Loaded="UtilCtrl_ToolsButton_Loaded" PreviewMouseDown="UtilCtrl_ToolsButton_MouseDown">
     <Grid>
         <Grid.Resources>
             <Style TargetType="{x:Type Border}">
@@ -16,9 +15,9 @@
                 <Setter Property="Background" Value="Transparent" />
             </Style>
             <Style TargetType="{x:Type Button}">
-                <Setter Property="Width" Value="40" />
-                <Setter Property="Height" Value="40" />
-                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Width" Value="42" />
+                <Setter Property="Height" Value="42" />
+                <Setter Property="Background" Value="Pink" />
             </Style>
             <Style TargetType="{x:Type Image}">
                 <Setter Property="Margin" Value="5" />
@@ -27,7 +26,7 @@
             </Style>
         </Grid.Resources>
         <Border>
-            <Button x:Name="ToolsButton_Button" Click="ToolsButton_Button_Click">
+            <Button x:Name="ToolsButton_Button">
                 <Image x:Name="ToolsButton_Image" />
             </Button>
         </Border>

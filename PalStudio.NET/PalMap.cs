@@ -58,10 +58,11 @@ namespace PalMap
 
         public enum MapDrawingStep
         {
-            LowTile     = 1 << 0,
-            HighTile    = 1 << 1,
-            EventSpirit = 1 << 2,
-            MaskTile    = 1 << 3,
+            None        = 1 << 0,
+            LowTile     = 1 << 1,
+            HighTile    = 1 << 2,
+            EventSpirit = 1 << 3,
+            MaskTile    = 1 << 4,
         }
 
         public enum MapTileCursorColorType
@@ -128,7 +129,7 @@ namespace PalMap
 
         public static readonly PAL_Rect m_MapRect       = new PAL_Rect(0, 0, mc_wMapWidth,      mc_wMapHeight);
         public static readonly PAL_Rect m_MapTileRect   = new PAL_Rect(0, 0, mc_wMapTileWidth,  mc_wMapTileHeight);
-        public static Surface           m_MapViewport_Low_Surface, m_MapViewport_High_Surface, m_MapViewport_EventSpiritAndMaskTile_Surface, m_MapViewport_Obstacle_Surface, m_MapViewport_Event_Surface, m_MapViewport_Active_Surface, m_MapViewport_Selected_Surface;
+        public static Surface           m_MapViewport_Low_Surface, m_MapViewport_High_Surface, m_MapViewport_EventTileSpiritAndMaskTile_Surface, m_MapViewport_Obstacle_Surface, m_MapViewport_Event_Surface, m_MapViewport_Active_Surface, m_MapViewport_Selected_Surface;
 
         public static List<Surface>     mc_sfMapTileCursor = new List<Surface>();
 
@@ -193,7 +194,7 @@ namespace PalMap
             //
             m_MapViewport_Low_Surface                       = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
             m_MapViewport_High_Surface                      = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
-            m_MapViewport_EventSpiritAndMaskTile_Surface    = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_EventTileSpiritAndMaskTile_Surface = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
             m_MapViewport_Obstacle_Surface                  = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
             m_MapViewport_Event_Surface                     = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
             m_MapViewport_Active_Surface                    = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);

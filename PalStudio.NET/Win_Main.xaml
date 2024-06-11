@@ -11,7 +11,7 @@
         Height="600" Width="800" MinHeight="600" MinWidth="800"
         MaxHeight="{x:Static SystemParameters.MaximizedPrimaryScreenHeight}"
         MaxWidth="{x:Static SystemParameters.MaximizedPrimaryScreenWidth}"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded" KeyDown="Window_KeyDown">
     <Window.Resources>
         <Style TargetType="{x:Type Border}">
             <Setter Property="BorderBrush" Value="#1d1d1d" />
@@ -63,7 +63,7 @@
                                     <DockPanel.Resources>
                                         <Style TargetType="{x:Type Border}">
                                             <Setter Property="BorderBrush"     Value="Black" />
-                                            <Setter Property="BorderThickness" Value="1,0,0,0" />
+                                            <Setter Property="BorderThickness" Value="2,0,0,0" />
                                             <Setter Property="IsEnabled"       Value="False" />
                                             <Setter Property="Opacity"         Value="0.4" />
                                         </Style>
@@ -76,24 +76,27 @@
                                         </DockPanel>
                                     </Border>
                                     <Border x:Name="MapEditMode_ToolsButtonList" DockPanel.Dock="Left">
-                                        <DockPanel LastChildFill="False">
-                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Select_Button" Tag="Resources\ToolBar_Select.png" ToolTip="模式：选择地图上的元素" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Edit_Button"   Tag="Resources\ToolBar_Edit.png"   ToolTip="模式：编辑地图上的元素" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Delete_Button" Tag="Resources\ToolBar_Delete.png" ToolTip="模式：清除地图上的元素" />
+                                        <DockPanel LastChildFill="False" Tag="ToolsButtonGroupType_Radio">
+                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Select_Button" Tag="Resources\ToolBar_Select.png" ToolTip="模式：选择地图上的元素" PreviewMouseDown="MapEditMode_Select_Button_MouseDown" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Edit_Button"   Tag="Resources\ToolBar_Edit.png"   ToolTip="模式：编辑地图上的元素" PreviewMouseDown="MapEditMode_Edit_Button_MouseDown" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapEditMode_Delete_Button" Tag="Resources\ToolBar_Delete.png" ToolTip="模式：清除地图上的元素" PreviewMouseDown="MapEditMode_Delete_Button_MouseDown" />
                                         </DockPanel>
                                     </Border>
                                     <Border x:Name="MapBlockDisplayMode_ToolsButtonList" DockPanel.Dock="Left">
-                                        <DockPanel LastChildFill="False">
-                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_NoPass_Button"     Tag="Resources\ToolBar_NoPass.png"     ToolTip="显示/隐藏块：障碍块" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_EventBlock_Button" Tag="Resources\ToolBar_EventBlock.png" ToolTip="显示/隐藏块：事件块" Panel.ZIndex="-1" />
+                                        <DockPanel LastChildFill="False" Tag="ToolsButtonGroupType_CheckBox">
+                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_EventBlock_Button"                     Tag="Resources\ToolBar_EventBlock.png"     ToolTip="显示/隐藏块：事件块"            Panel.ZIndex="-1" PreviewMouseDown="MapBlockDisplayMode_EventBlock_Button_MouseDown" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_NoPassBlock_Button"                    Tag="Resources\ToolBar_NoPassBlock.png"    ToolTip="显示/隐藏块：障碍块"                              PreviewMouseDown="MapBlockDisplayMode_NoPassBlock_Button_MouseDown" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_EventTileBlockAndMaskTileBlock_Button" Tag="Resources\ToolBar_EventTileBlock.png" ToolTip="显示/突出/隐藏块：事件与遮挡块" Panel.ZIndex="-2" PreviewMouseDown="MapBlockDisplayMode_EventTileBlockAndMaskTileBlock_Button_MouseDown" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_HighTileBlock_Button"                  Tag="Resources\ToolBar_HighTileBlock.png"  ToolTip="显示/隐藏块：高层块"                              PreviewMouseDown="MapBlockDisplayMode_HighTileBlock_Button_MouseDown" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapBlockDisplayMode_LowTileBlock_Button"                   Tag="Resources\ToolBar_LowTileBlock.png"   ToolTip="显示/隐藏块：底层块"                              PreviewMouseDown="MapBlockDisplayMode_LowTileBlock_Button_MouseDown" />
                                         </DockPanel>
                                     </Border>
                                     <Border x:Name="MapLayerMode_ToolsButtonList" DockPanel.Dock="Left">
-                                        <DockPanel LastChildFill="False">
-                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_LowTile_Button"     Tag="Resources\ToolBar_LowTile.png"     ToolTip="编辑 Tile：底层" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_HighTile_Button"    Tag="Resources\ToolBar_HighTile.png"    ToolTip="编辑 Tile：高层"/>
-                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_NoPassBlock_Button" Tag="Resources\ToolBar_NoPassBlock.png" ToolTip="编辑 Tile：障碍层" />
-                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_Event_Button"       Tag="Resources\ToolBar_Event.png"       ToolTip="编辑 Tile：事件层" Panel.ZIndex="-1" />
+                                        <DockPanel LastChildFill="False" Tag="ToolsButtonGroupType_Radio">
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_LowTile_Button"  Tag="Resources\ToolBar_LowTile.png"  ToolTip="编辑 Tile 层：底层"                     PreviewMouseDown="MapLayerMode_LowTile_Button_MouseDown" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_HighTile_Button" Tag="Resources\ToolBar_HighTile.png" ToolTip="编辑 Tile 层：高层"                     PreviewMouseDown="MapLayerMode_HighTile_Button_MouseDown" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_NoPass_Button"   Tag="Resources\ToolBar_NoPass.png"   ToolTip="编辑 Tile 层：障碍层"                   PreviewMouseDown="MapLayerMode_NoPass_Button_MouseDown" />
+                                            <local:UtilCtrl_ToolsButton x:Name="MapLayerMode_Event_Button"    Tag="Resources\ToolBar_Event.png"    ToolTip="编辑 Tile 层：事件层" Panel.ZIndex="-1" PreviewMouseDown="MapLayerMode_Event_Button_MouseDown" />
                                         </DockPanel>
                                     </Border>
                                 </DockPanel>
@@ -187,13 +190,13 @@
                                             <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
                                                 <ScrollViewer x:Name="MapViewport_ScrollViewer" Background="Black" HorizontalScrollBarVisibility="Visible">
                                                     <Canvas x:Name="MapViewport_Canvas" MouseMove="MapViewport_Moving_Image_MouseMove" MouseDown="MapViewport_Canvas_MouseDown">
-                                                        <Image x:Name="MapViewport_Selected_Image"               Panel.ZIndex="6" IsEnabled="False" />
-                                                        <Image x:Name="MapViewport_Active_Image"                 Panel.ZIndex="5" IsEnabled="False" />
-                                                        <Image x:Name="MapViewport_Event_Image"                  Panel.ZIndex="4" />
-                                                        <Image x:Name="MapViewport_Obstacle_Image"               Panel.ZIndex="3" />
-                                                        <Image x:Name="MapViewport_EventSpiritAndMaskTile_Image" Panel.ZIndex="2" />
-                                                        <Image x:Name="MapViewport_High_Image"                   Panel.ZIndex="1" />
-                                                        <Image x:Name="MapViewport_Low_Image"                    Panel.ZIndex="0" />
+                                                        <Image x:Name="MapViewport_Selected_Image"                   Panel.ZIndex="6" IsEnabled="False" />
+                                                        <Image x:Name="MapViewport_Active_Image"                     Panel.ZIndex="5" IsEnabled="False" />
+                                                        <Image x:Name="MapViewport_Event_Image"                      Panel.ZIndex="4" Visibility="Collapsed" />
+                                                        <Image x:Name="MapViewport_Obstacle_Image"                   Panel.ZIndex="3" Visibility="Collapsed" />
+                                                        <Image x:Name="MapViewport_EventTileSpiritAndMaskTile_Image" Panel.ZIndex="2" Visibility="Collapsed" />
+                                                        <Image x:Name="MapViewport_High_Image"                       Panel.ZIndex="1" Visibility="Collapsed" />
+                                                        <Image x:Name="MapViewport_Low_Image"                        Panel.ZIndex="0" Visibility="Collapsed" />
                                                     </Canvas>
                                                 </ScrollViewer>
                                             </Border>

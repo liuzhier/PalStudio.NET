@@ -63,9 +63,10 @@ namespace PalStudio.NET
         private static INT              m_nScene, m_iThisScene = -1, m_iMapViewportScale = 100;
         private static WORD             m_wActivePosX = 0, m_wActivePosY = 0, m_wSelectPosX = 0, m_wSelectPosY = 0;
         private static double           m_douViewportWidth = 0, m_douViewportHeight = 0;
-        private static BOOL             m_fCanClose = FALSE, fIsEventHighlighting = FALSE;
+        private static BOOL             m_fCanClose = FALSE;
         private static EnterSceneStatus me_essEnterSceneStatus;
         private static ScaleTransform   m_stMapViewport_ScaleTransform = new ScaleTransform();
+        private static MapDrawingStep   m_EventTileBlockAndMaskTileBlockDisplayStatus = MapDrawingStep.EventSpirit | MapDrawingStep.MaskTile;
 
 
         public Win_SelectScene()
@@ -186,8 +187,8 @@ namespace PalStudio.NET
             //
             for (i = Pal_Map.mc_wMinSceneIndex; i < m_nScene; i++)
             {
-                uciliMapNameItem = new UtilCtrl_ItemList_Item();
-                lpszMapName = Pal_Cfg_GetCfgNodeItem(lpszSceneDesc, $"0x{i:X4}").lpszTitle;
+                uciliMapNameItem    = new UtilCtrl_ItemList_Item();
+                lpszMapName         = Pal_Cfg_GetCfgNodeItem(lpszSceneDesc, $"0x{i:X4}").lpszTitle;
 
                 uciliMapNameItem.SetText($"[0x{i:X4}] {i:D5}: {lpszMapName}");
                 uciliMapNameItem.SetParent(SceneNameList_DockPanel);
@@ -265,17 +266,17 @@ namespace PalStudio.NET
                 //
                 Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources,
                     Pal_Map.m_MapViewport_Low_Surface.CleanSpirit(0xFF), Pal_Map.m_MapViewport_High_Surface.CleanSpirit(0xFF),
-                    Pal_Map.m_MapViewport_EventSpiritAndMaskTile_Surface.CleanSpirit(0xFF),
+                    Pal_Map.m_MapViewport_EventTileSpiritAndMaskTile_Surface.CleanSpirit(0xFF),
                     MapDrawingStep.LowTile | MapDrawingStep.HighTile | MapDrawingStep.EventSpirit | MapDrawingStep.MaskTile);
 
                 //
                 // 开始将 <Surface> 绘制到 <Image>
                 //
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Low_Surface,                     MapViewport_Low_Image,                      Pal_Map.m_MapRect);
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_High_Surface,                    MapViewport_High_Image,                     Pal_Map.m_MapRect);
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_EventSpiritAndMaskTile_Surface,  MapViewport_EventSpiritAndMaskTile_Image,   Pal_Map.m_MapRect);
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,                MapViewport_Obstacle_Image,                 Pal_Map.m_MapRect);
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Event_Surface,                   MapViewport_Event_Image,                    Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Low_Surface,                         MapViewport_Low_Image,                          Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_High_Surface,                        MapViewport_High_Image,                         Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_EventTileSpiritAndMaskTile_Surface,  MapViewport_EventTileSpiritAndMaskTile_Image,   Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,                    MapViewport_Obstacle_Image,                     Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Event_Surface,                       MapViewport_Event_Image,                        Pal_Map.m_MapRect);
 
                 //
                 // 绘制 <障碍块>
@@ -331,7 +332,7 @@ namespace PalStudio.NET
             //
             // 判断用户输入的数值是否合法
             //
-            if ((iSceneNum = UTIL_TextBoxTextIsMatch(ThisSceneIndex_TextBox, Pal_Map.m_iSceneNum)) == 0x7FFFFFFF) return;
+            if ((iSceneNum = UTIL_TextBoxTextIsMatch(ThisSceneIndex_TextBox, Pal_Map.m_iSceneNum)) == PALSN_ERROR) return;
 
             //
             // 数值未变动，退出函数
@@ -365,7 +366,7 @@ namespace PalStudio.NET
                 //
                 // 判断用户输入的数值是否合法
                 //
-                if ((iThisScene = UTIL_TextBoxTextIsMatch(textBox, m_iThisScene)) == 0x7FFFFFFF)
+                if ((iThisScene = UTIL_TextBoxTextIsMatch(textBox, m_iThisScene)) == PALSN_ERROR)
                 {
                     //
                     // 用户输入了错误的百分值
@@ -417,87 +418,6 @@ tagEnd:
             get
             {
                 return me_essEnterSceneStatus == EnterSceneStatus.Enter;
-            }
-        }
-
-        private void Window_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (Keyboard.Modifiers == ModifierKeys.Control)
-            {
-                if (e.Key == Key.D1 || e.Key == Key.NumPad1)
-                {
-                    //
-                    // <数字键 1> （主键盘上或小键盘）
-                    // 隐藏或显示 <Event Cursor>
-                    //
-                    MapViewport_Event_Image.Visibility = (MapViewport_Event_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
-                }
-                else if (e.Key == Key.D2 || e.Key == Key.NumPad2)
-                {
-                    //
-                    // <数字键 2>
-                    // 隐藏或显示 <Obstacle Cursor>
-                    //
-                    MapViewport_Obstacle_Image.Visibility = (MapViewport_Obstacle_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
-                }
-                else if (e.Key == Key.D3 || e.Key == Key.NumPad3)
-                {
-                    //
-                    // <数字键 3> 
-                    // 取消绘制 <Mask Tile> / 将事件突出显示
-                    //
-                    if (MapViewport_EventSpiritAndMaskTile_Image.Visibility == Visibility.Visible)
-                    {
-                        //
-                        // 绘制资源列表中所有的 <Sprite> 元素
-                        //
-                        if (fIsEventHighlighting = !fIsEventHighlighting)
-                        {
-                            //
-                            // 仅绘制 <Event Spirit> 到 <Surface>
-                            //
-                            Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, (Surface)NULL, (Surface)NULL,
-                                Pal_Map.m_MapViewport_EventSpiritAndMaskTile_Surface.CleanSpirit(0xFF), MapDrawingStep.EventSpirit);
-                        }
-                        else
-                        {
-                            //
-                            // 仅绘制 <Event Spirit> 和 <> 到 <Surface>
-                            //
-                            Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, (Surface)NULL, (Surface)NULL,
-                                Pal_Map.m_MapViewport_EventSpiritAndMaskTile_Surface.CleanSpirit(0xFF), MapDrawingStep.EventSpirit | MapDrawingStep.MaskTile);
-                        }
-
-                        //
-                        // 开始将 <Surface> 绘制到 <Image>
-                        //
-                        VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_EventSpiritAndMaskTile_Surface, MapViewport_EventSpiritAndMaskTile_Image, Pal_Map.m_MapRect);
-                    }
-                }
-                else if (e.Key == Key.D4 || e.Key == Key.NumPad4)
-                {
-                    //
-                    // <数字键 4>
-                    // 隐藏或显示 <Mask Tile> 和 <Event Spirit>
-                    //
-                    MapViewport_EventSpiritAndMaskTile_Image.Visibility = (MapViewport_EventSpiritAndMaskTile_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
-                }
-                else if (e.Key == Key.D5 || e.Key == Key.NumPad5)
-                {
-                    //
-                    // <数字键 5>
-                    // 隐藏或显示 <High Tile>
-                    //
-                    MapViewport_High_Image.Visibility = (MapViewport_High_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
-                }
-                else if (e.Key == Key.D6 || e.Key == Key.NumPad6)
-                {
-                    //
-                    // <数字键 6>
-                    // 隐藏或显示 <Low Tile>
-                    //
-                    MapViewport_Low_Image.Visibility = (MapViewport_Low_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
-                }
             }
         }
 
@@ -569,6 +489,93 @@ tagEnd:
             // 更新 <Active Cursor> 的位置
             //
             MapViewport_Selected_Image.Margin = new Thickness(m_wSelectPosX * (m_iMapViewportScale / 100.00), m_wSelectPosY * (m_iMapViewportScale / 100.00), 0, 0);
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                if(e.Key == Key.D1 || e.Key == Key.NumPad1)
+                {
+                    //
+                    // <数字键 1> （主键盘上或小键盘）
+                    // 隐藏或显示 <Event Cursor>
+                    //
+                    MapViewport_Event_Image.Visibility = (MapViewport_Event_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
+                }
+                else if (e.Key == Key.D2 || e.Key == Key.NumPad2)
+                {
+                    //
+                    // <数字键 2>
+                    // 隐藏或显示 <Obstacle Cursor>
+                    //
+                    MapViewport_Obstacle_Image.Visibility = (MapViewport_Obstacle_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
+                }
+                else if (e.Key == Key.D3 || e.Key == Key.NumPad3)
+                {
+                    //
+                    // <数字键 3> 
+                    // 将 <Event Spirit> 突出显示 / 隐藏或显示 <Mask Tile> 和 <Event Spirit>
+                    //
+                    if (((m_EventTileBlockAndMaskTileBlockDisplayStatus & MapDrawingStep.EventSpirit) != 0) &&
+                        ((m_EventTileBlockAndMaskTileBlockDisplayStatus & MapDrawingStep.MaskTile) != 0))
+                    {
+                        //
+                        // 仅绘制 <Event Spirit> 到 <Surface>
+                        //
+                        m_EventTileBlockAndMaskTileBlockDisplayStatus ^= MapDrawingStep.MaskTile;
+                    }
+                    else if (((m_EventTileBlockAndMaskTileBlockDisplayStatus & MapDrawingStep.EventSpirit) != 0) &&
+                        ((m_EventTileBlockAndMaskTileBlockDisplayStatus & MapDrawingStep.MaskTile) == 0) &&
+                        MapViewport_EventTileSpiritAndMaskTile_Image.Visibility == Visibility.Visible)
+                    {
+                        //
+                        // 隐藏 <Event Spirit> 和 <MaskTile Spirit>
+                        //
+                        MapViewport_EventTileSpiritAndMaskTile_Image.Visibility = Visibility.Collapsed;
+
+                        //
+                        // 后续执行无意义，直接跳出
+                        //
+                        return;
+                    }
+                    else
+                    {
+                        //
+                        // 显示并绘制 <Event Spirit> 和 <MaskTile Spirit> 到 <Surface>
+                        //
+                        m_EventTileBlockAndMaskTileBlockDisplayStatus              |= MapDrawingStep.MaskTile;
+                        MapViewport_EventTileSpiritAndMaskTile_Image.Visibility     = Visibility.Visible;
+                    }
+
+                    //
+                    // 绘制 <Event Spirit> 或 <MaskTile Spirit> 到 <Surface>
+                    //
+                    Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, (Surface)NULL, (Surface)NULL,
+                        Pal_Map.m_MapViewport_EventTileSpiritAndMaskTile_Surface.CleanSpirit(0xFF), m_EventTileBlockAndMaskTileBlockDisplayStatus);
+
+                    //
+                    // 开始将 <Surface> 绘制到 <Image>
+                    //
+                    VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_EventTileSpiritAndMaskTile_Surface, MapViewport_EventTileSpiritAndMaskTile_Image, Pal_Map.m_MapRect);
+                }
+                else if (e.Key == Key.D4 || e.Key == Key.NumPad4)
+                {
+                    //
+                    // <数字键 4>
+                    // 隐藏或显示 <High Tile>
+                    //
+                    MapViewport_High_Image.Visibility = (MapViewport_High_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
+                }
+                else if (e.Key == Key.D5 || e.Key == Key.NumPad5)
+                {
+                    //
+                    // <数字键 5>
+                    // 隐藏或显示 <Low Tile>
+                    //
+                    MapViewport_Low_Image.Visibility = (MapViewport_Low_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
+                }
+            }
         }
     }
 }

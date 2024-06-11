@@ -123,13 +123,13 @@
                         <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
                             <ScrollViewer x:Name="MapViewport_ScrollViewer" Background="Black" HorizontalScrollBarVisibility="Visible">
                                 <Canvas x:Name="MapViewport_Canvas" MouseMove="MapViewport_Moving_Image_MouseMove" MouseDown="MapViewport_Canvas_MouseDown">
-                                    <Image x:Name="MapViewport_Selected_Image"               Panel.ZIndex="6" IsEnabled="False" />
-                                    <Image x:Name="MapViewport_Active_Image"                 Panel.ZIndex="5" IsEnabled="False" />
-                                    <Image x:Name="MapViewport_Event_Image"                  Panel.ZIndex="4" />
-                                    <Image x:Name="MapViewport_Obstacle_Image"               Panel.ZIndex="3" />
-                                    <Image x:Name="MapViewport_EventSpiritAndMaskTile_Image" Panel.ZIndex="2" />
-                                    <Image x:Name="MapViewport_High_Image"                   Panel.ZIndex="1" />
-                                    <Image x:Name="MapViewport_Low_Image"                    Panel.ZIndex="0" />
+                                    <Image x:Name="MapViewport_Selected_Image"                   Panel.ZIndex="6" IsEnabled="False" />
+                                    <Image x:Name="MapViewport_Active_Image"                     Panel.ZIndex="5" IsEnabled="False" />
+                                    <Image x:Name="MapViewport_Event_Image"                      Panel.ZIndex="4" />
+                                    <Image x:Name="MapViewport_Obstacle_Image"                   Panel.ZIndex="3" />
+                                    <Image x:Name="MapViewport_EventTileSpiritAndMaskTile_Image" Panel.ZIndex="2" />
+                                    <Image x:Name="MapViewport_High_Image"                       Panel.ZIndex="1" />
+                                    <Image x:Name="MapViewport_Low_Image"                        Panel.ZIndex="0" />
                                 </Canvas>
                             </ScrollViewer>
                         </Border>

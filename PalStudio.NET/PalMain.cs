@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.IO;
+using System.Windows;
 
 using BOOL	    = System.Boolean;
 using CHAR	    = System.Char;
@@ -24,7 +26,6 @@ using static PalUtil.Pal_Util;
 using static PalGlobal.Pal_Global;
 using static PalCfg.Pal_Cfg;
 using static PalConfig.Pal_Config;
-using System.IO;
 
 namespace PalMain
 {
@@ -77,6 +78,11 @@ namespace PalMain
             // Check game resource file version
             //
             Pal_Cfg.fIsWIN95 = PAL_IsWINVersion();
+
+            //
+            // Initialize <Simulate Mouse Down Event>
+            //
+            Pal_Global.SimulateMouseDownEvent.RoutedEvent = UIElement.PreviewMouseDownEvent;
 
             //
             // Load custom Tabpage

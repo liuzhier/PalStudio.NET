@@ -50,11 +50,37 @@ namespace PalStudio.NET
     /// </summary>
     public partial class Win_Main : Window
     {
+        private enum MapEditMode
+        {
+            Default = Select,
+            Min     = Select,
+            Max     = Delete,
+
+            Select  = 0,
+            Edit    = 1,
+            Delete  = 2,
+        }
+
+        private enum MapLayerMode
+        {
+            Default = LowTile,
+            Min     = LowTile,
+            Max     = Event,
+
+            LowTile     = 0,
+            HighTile    = 1,
+            NoPass      = 2,
+            Event       = 3,
+        }
+
         private static BOOL             m_fCanClose = TRUE; 
         private static INT              m_iThisMapTile = -1, m_iMapViewportScale = 200;
         private static WORD             m_wActivePosX = 0, m_wActivePosY = 0, m_wSelectPosX = 0, m_wSelectPosY = 0;
         private static double           m_douViewportWidth = 0, m_douViewportHeight = 0;
         private static ScaleTransform   m_stMapViewport_ScaleTransform = new ScaleTransform();
+        private static MapDrawingStep   m_EventTileBlockAndMaskTileBlockDisplayStatus = MapDrawingStep.EventSpirit | MapDrawingStep.MaskTile;
+        private static MapEditMode      me_MapEditMode  = MapEditMode.Default;
+        private static MapLayerMode     me_MapLayerMode = MapLayerMode.Default;
 
         private static Win_SelectScene  win_SelectScene = new Win_SelectScene();
 
@@ -237,11 +263,11 @@ namespace PalStudio.NET
                 //
                 // 开始将 <Surface> 绘制到 <Image>
                 //
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Low_Surface,                     MapViewport_Low_Image,                      Pal_Map.m_MapRect);
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_High_Surface,                    MapViewport_High_Image,                     Pal_Map.m_MapRect);
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_EventSpiritAndMaskTile_Surface,  MapViewport_EventSpiritAndMaskTile_Image,   Pal_Map.m_MapRect);
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,                MapViewport_Obstacle_Image,                 Pal_Map.m_MapRect);
-                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Event_Surface,                   MapViewport_Event_Image,                    Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Low_Surface,                         MapViewport_Low_Image,                          Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_High_Surface,                        MapViewport_High_Image,                         Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_EventTileSpiritAndMaskTile_Surface,  MapViewport_EventTileSpiritAndMaskTile_Image,   Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Obstacle_Surface,                    MapViewport_Obstacle_Image,                     Pal_Map.m_MapRect);
+                VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_Event_Surface,                       MapViewport_Event_Image,                        Pal_Map.m_MapRect);
 
                 //
                 // 绘制 <障碍块>
@@ -278,6 +304,17 @@ namespace PalStudio.NET
                     MapViewportScale_TextBox.IsEnabled              = TRUE;
                     MapViewport_Selected_Image.IsEnabled            = TRUE;
                     MapViewport_Active_Image.IsEnabled              = TRUE;
+
+                    //
+                    // 初始化 <视图> 与 <编辑模式>
+                    //
+                    MapEditMode_Select_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                    MapBlockDisplayMode_EventBlock_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                    MapBlockDisplayMode_NoPassBlock_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                    MapBlockDisplayMode_EventTileBlockAndMaskTileBlock_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                    MapBlockDisplayMode_HighTileBlock_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                    MapBlockDisplayMode_LowTileBlock_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                    MapLayerMode_LowTile_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
 
                     //
                     // 删除粉背景提示控件
@@ -321,7 +358,7 @@ namespace PalStudio.NET
             //
             // 判断用户输入的数值是否合法
             //
-            if ((iThisMapTile = UTIL_TextBoxTextIsMatch(ThisMapTileIndex_TextBox, m_iThisMapTile)) == 0x7FFFFFFF) return;
+            if ((iThisMapTile = UTIL_TextBoxTextIsMatch(ThisMapTileIndex_TextBox, m_iThisMapTile)) == PALSN_ERROR) return;
 
             //
             // 数值未变动，退出函数
@@ -354,7 +391,7 @@ namespace PalStudio.NET
                 //
                 // 判断用户输入的数值是否合法
                 //
-                if ((iThisMapTile = UTIL_TextBoxTextIsMatch(textBox, m_iThisMapTile)) == 0x7FFFFFFF)
+                if ((iThisMapTile = UTIL_TextBoxTextIsMatch(textBox, m_iThisMapTile)) == PALSN_ERROR)
                 {
                     //
                     // 用户输入了错误的百分值
@@ -444,6 +481,9 @@ tagEnd:
 
         private void MapViewport_Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            //
+            // 备份 <Select Cursor> 坐标
+            //
             m_wSelectPosX = m_wActivePosX;
             m_wSelectPosY = m_wActivePosY;
 
@@ -451,6 +491,227 @@ tagEnd:
             // 更新 <Active Cursor> 的位置
             //
             MapViewport_Selected_Image.Margin = new Thickness(m_wSelectPosX * (m_iMapViewportScale / 100.00), m_wSelectPosY * (m_iMapViewportScale / 100.00), 0, 0);
+        }
+
+        private void MapEditMode_Select_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //
+            // 将模式设置为 <Select Element Mode>
+            //
+            me_MapEditMode = MapEditMode.Select;
+        }
+
+        private void MapEditMode_Edit_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //
+            // 将模式设置为 <Edit Element Mode>
+            //
+            me_MapEditMode = MapEditMode.Edit;
+        }
+
+        private void MapEditMode_Delete_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //
+            // 将模式设置为 <Delete Element Mode>
+            //
+            me_MapEditMode = MapEditMode.Delete;
+        }
+
+        private void MapBlockDisplayMode_EventBlock_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //
+            // 隐藏或显示 <Event Cursor>
+            //
+            MapViewport_Event_Image.Visibility = (MapViewport_Event_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void MapBlockDisplayMode_NoPassBlock_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //
+            // 隐藏或显示 <Obstacle Cursor>
+            //
+            MapViewport_Obstacle_Image.Visibility = (MapViewport_Obstacle_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void MapBlockDisplayMode_EventTileBlockAndMaskTileBlock_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //
+            // 将 <Event Spirit> 突出显示 / 隐藏或显示 <Mask Tile> 和 <Event Spirit>
+            //
+            if (((m_EventTileBlockAndMaskTileBlockDisplayStatus & MapDrawingStep.EventSpirit) != 0) &&
+                ((m_EventTileBlockAndMaskTileBlockDisplayStatus & MapDrawingStep.MaskTile)    != 0) &&
+                MapViewport_EventTileSpiritAndMaskTile_Image.Visibility == Visibility.Visible)
+            {
+                //
+                // 仅绘制 <Event Spirit> 到 <Surface>
+                //
+                m_EventTileBlockAndMaskTileBlockDisplayStatus ^= MapDrawingStep.MaskTile;
+            }
+            else if (((m_EventTileBlockAndMaskTileBlockDisplayStatus & MapDrawingStep.EventSpirit) != 0) &&
+                ((m_EventTileBlockAndMaskTileBlockDisplayStatus & MapDrawingStep.MaskTile) == 0) &&
+                MapViewport_EventTileSpiritAndMaskTile_Image.Visibility == Visibility.Visible)
+            {
+                //
+                // 隐藏 <Event Spirit> 和 <MaskTile Spirit>
+                //
+                MapViewport_EventTileSpiritAndMaskTile_Image.Visibility = Visibility.Collapsed;
+
+                //
+                // 后续执行无意义，直接跳出
+                //
+                return;
+            }
+            else
+            {
+                //
+                // 显示并绘制 <Event Spirit> 和 <MaskTile Spirit> 到 <Surface>
+                //
+                m_EventTileBlockAndMaskTileBlockDisplayStatus              |= MapDrawingStep.MaskTile;
+                MapViewport_EventTileSpiritAndMaskTile_Image.Visibility     = Visibility.Visible;
+            }
+
+            //
+            // 绘制 <Event Spirit> 或 <MaskTile Spirit> 到 <Surface>
+            //
+            Pal_Map.DrawMapTileAndSprite(Pal_Global.m_prResources, (Surface)NULL, (Surface)NULL,
+                Pal_Map.m_MapViewport_EventTileSpiritAndMaskTile_Surface.CleanSpirit(0xFF), m_EventTileBlockAndMaskTileBlockDisplayStatus);
+
+            //
+            // 开始将 <Surface> 绘制到 <Image>
+            //
+            VIDEO_DrawSurfaceToImage(Pal_Map.m_MapViewport_EventTileSpiritAndMaskTile_Surface, MapViewport_EventTileSpiritAndMaskTile_Image, Pal_Map.m_MapRect);
+        }
+
+        private void MapBlockDisplayMode_HighTileBlock_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //
+            // 隐藏或显示 <High Tile>
+            //
+            MapViewport_High_Image.Visibility = (MapViewport_High_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void MapBlockDisplayMode_LowTileBlock_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //
+            // 隐藏或显示 <Low Tile>
+            //
+            MapViewport_Low_Image.Visibility = (MapViewport_Low_Image.Visibility == Visibility.Visible) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void MapLayerMode_LowTile_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            me_MapLayerMode = MapLayerMode.LowTile;
+        }
+
+        private void MapLayerMode_HighTile_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            me_MapLayerMode = MapLayerMode.HighTile;
+        }
+
+        private void MapLayerMode_NoPass_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            me_MapLayerMode = MapLayerMode.NoPass;
+        }
+
+        private void MapLayerMode_Event_Button_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            me_MapLayerMode = MapLayerMode.Event;
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                if (e.Key == Key.M)
+                {
+                    //
+                    // <字母键 T>
+                    // 模式切换 <Select/Edit/Delect Element Mode>
+                    //
+                    if (me_MapEditMode < MapEditMode.Max)
+                    {
+                        me_MapEditMode++;
+                    }
+                    else
+                    {
+                        me_MapEditMode = MapEditMode.Min;
+                    }
+
+                    ((UtilCtrl_ToolsButton)((DockPanel)MapEditMode_ToolsButtonList.Child).Children[(INT)me_MapEditMode]).RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                }
+                else if(e.Key == Key.D1 || e.Key == Key.NumPad1)
+                {
+                    //
+                    // <数字键 1> （主键盘上或小键盘）
+                    // 隐藏或显示 <Event Cursor>
+                    //
+                    MapBlockDisplayMode_EventBlock_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                }
+                else if (e.Key == Key.D2 || e.Key == Key.NumPad2)
+                {
+                    //
+                    // <数字键 2>
+                    // 隐藏或显示 <Obstacle Cursor>
+                    //
+                    MapBlockDisplayMode_NoPassBlock_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                }
+                else if (e.Key == Key.D3 || e.Key == Key.NumPad3)
+                {
+                    //
+                    // <数字键 3> 
+                    // 将 <Event Spirit> 突出显示 / 隐藏或显示 <Mask Tile> 和 <Event Spirit>
+                    //
+                    MapBlockDisplayMode_EventTileBlockAndMaskTileBlock_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                }
+                else if (e.Key == Key.D4 || e.Key == Key.NumPad4)
+                {
+                    //
+                    // <数字键 4>
+                    // 隐藏或显示 <High Tile>
+                    //
+                    MapBlockDisplayMode_HighTileBlock_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                }
+                else if (e.Key == Key.D5 || e.Key == Key.NumPad5)
+                {
+                    //
+                    // <数字键 5>
+                    // 隐藏或显示 <Low Tile>
+                    //
+                    MapBlockDisplayMode_LowTileBlock_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                }
+                else if(e.Key == Key.Q)
+                {
+                    //
+                    // <字母键 Q>
+                    // 图层模式 <Low Tile>
+                    //
+                    MapLayerMode_LowTile_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                }
+                else if (e.Key == Key.W)
+                {
+                    //
+                    // <字母键 W>
+                    // 图层模式 <High Tile>
+                    //
+                    MapLayerMode_HighTile_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                }
+                else if (e.Key == Key.E)
+                {
+                    //
+                    // <字母键 E>
+                    // 图层模式 <Obstacle Tile>
+                    //
+                    MapLayerMode_NoPass_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                }
+                else if (e.Key == Key.R)
+                {
+                    //
+                    // <字母键 R>
+                    // 图层模式 <Event Tile>
+                    //
+                    MapLayerMode_Event_Button.RaiseEvent(Pal_Global.SimulateMouseDownEvent);
+                }
+            }
         }
     }
 }

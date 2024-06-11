@@ -254,7 +254,7 @@ namespace PalUtil
                 }
             }
 
-            return 0x7FFFFFFF;
+            return PALSN_ERROR;
         }
 
         private static Regex m_Regex = new Regex("^[0-9]+$");
@@ -312,7 +312,7 @@ namespace PalUtil
                 //
                 // 判断用户输入的数值是否合法
                 //
-                if ((iMapViewportScale = UTIL_TextBoxTextIsMatch(textBox, ref_iMapViewportScale)) == 0x7FFFFFFF) return;
+                if ((iMapViewportScale = UTIL_TextBoxTextIsMatch(textBox, ref_iMapViewportScale)) == PALSN_ERROR) return;
 
                 //
                 // 数值未变动，退出函数
@@ -349,7 +349,7 @@ namespace PalUtil
                 //
                 // 判断用户输入的数值是否合法
                 //
-                if ((iScale = UTIL_TextBoxTextIsMatch(textBox, iMapViewportScale)) == 0x7FFFFFFF)
+                if ((iScale = UTIL_TextBoxTextIsMatch(textBox, iMapViewportScale)) == PALSN_ERROR)
                 {
                     //
                     // 用户输入了错误的百分值

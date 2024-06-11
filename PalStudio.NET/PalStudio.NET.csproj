@@ -180,15 +180,24 @@
     <Resource Include="Resources\ToolBar_Edit.png" />
     <Resource Include="Resources\ToolBar_Event.png" />
     <Resource Include="Resources\ToolBar_EventBlock.png" />
-    <Resource Include="Resources\ToolBar_EventBlock_Display.png" />
     <Resource Include="Resources\ToolBar_HighTile.png" />
     <Resource Include="Resources\ToolBar_LowTile.png" />
     <Resource Include="Resources\ToolBar_New.png" />
-    <Resource Include="Resources\ToolBar_NoPass.png" />
     <Resource Include="Resources\ToolBar_NoPassBlock.png" />
+    <Resource Include="Resources\ToolBar_NoPass.png" />
     <Resource Include="Resources\ToolBar_Open.png" />
     <Resource Include="Resources\ToolBar_Save.png" />
     <Resource Include="Resources\ToolBar_Select.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\ToolBar_HighTileBlock.png" />
+    <Resource Include="Resources\ToolBar_LowTileBlock.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\ToolBar_EventTileBlock_Display.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\ToolBar_EventTileBlock.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
