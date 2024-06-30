@@ -8,7 +8,7 @@
         Title="PalStudio.NET" Icon="/Resources/LOGO.ICO"
         SnapsToDevicePixels="True" TextOptions.TextRenderingMode="ClearType" UseLayoutRounding="True"
         WindowStyle="None" WindowStartupLocation="CenterScreen"
-        Height="600" Width="800" MinHeight="600" MinWidth="800"
+        Height="600" Width="1200" MinHeight="600" MinWidth="1200"
         MaxHeight="{x:Static SystemParameters.MaximizedPrimaryScreenHeight}"
         MaxWidth="{x:Static SystemParameters.MaximizedPrimaryScreenWidth}"
         Loaded="Window_Loaded" KeyDown="Window_KeyDown">
@@ -146,7 +146,7 @@
                                                 <TextBlock Text="缩放: " />
                                             </StatusBarItem>
                                             <StatusBarItem Background="Chocolate">
-                                                <TextBox x:Name="MapViewportScale_TextBox" IsEnabled="False" Width="30" Background="Pink" Foreground="Crimson" HorizontalAlignment="Center" VerticalAlignment="Center" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="MapViewportScale_TextBox_TextChanged" LostFocus="MapViewportScale_TextBox_LostFocus">
+                                                <TextBox x:Name="MapViewportScale_TextBox" IsEnabled="False" Width="30" Background="Pink" Foreground="Crimson" HorizontalAlignment="Center" VerticalAlignment="Center" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="MapViewportScale_TextBox_PreviewTextInput" TextChanged="MapViewportScale_TextBox_TextChanged" LostFocus="MapViewportScale_TextBox_LostFocus">
 
                                                 </TextBox>
                                             </StatusBarItem>
@@ -156,56 +156,53 @@
                                         </StatusBar>
                                     </DockPanel>
                                     <DockPanel x:Name="WordMapBox_DockPanel" IsEnabled="False" DockPanel.Dock="Bottom" LastChildFill="True">
-                                        <DockPanel DockPanel.Dock="Left" LastChildFill="False">
-                                            <DockPanel DockPanel.Dock="Left" LastChildFill="True" Width="228">
-                                                <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1">
-                                                    <DockPanel LastChildFill="True" Background="LightPink" Height="75">
-                                                        <DockPanel DockPanel.Dock="Right" LastChildFill="True" Width="160" Background="Black">
-                                                            <Image x:Name="ThisMapTile_Image" Width="NaN" Height="75" />
+                                        <DockPanel DockPanel.Dock="Left" LastChildFill="True">
+                                            <local:UtilCtrl_ThisMapTileInformation x:Name="ThisMapTile_UtilCtrl_ThisMapTileInformation" DockPanel.Dock="Top" />
+                                            <Border DockPanel.Dock="Top" BorderThickness="0, 0, 1, 1">
+                                                <ScrollViewer Background="MistyRose">
+                                                    <Border BorderThickness="0, 0, 1, 0">
+                                                        <DockPanel x:Name="MapTilesList_DockPanel" LastChildFill="False" MouseDown="MapTilesList_DockPanel_MouseDown">
+
                                                         </DockPanel>
-                                                        <Border DockPanel.Dock="Right" BorderThickness="0, 0, 1, 0">
-                                                            <DockPanel LastChildFill="True">
-                                                                <Label x:Name="ThisMapTileIndex_Label" DockPanel.Dock="Top" Foreground="Crimson" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                                    未选择
-                                                                </Label>
-                                                                <TextBox x:Name="ThisMapTileIndex_TextBox" DockPanel.Dock="Top" Height="30" FontSize="20" Foreground="Crimson" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="ThisMapTileIndex_TextBox_TextChanged" LostFocus="ThisMapTileIndex_TextBox_LostFocus">
-                                                                    
-                                                                </TextBox>
-                                                            </DockPanel>
-                                                        </Border>
-                                                    </DockPanel>
-                                                </Border>
-                                                <Border DockPanel.Dock="Top" BorderThickness="0, 0, 1, 1">
+                                                    </Border>
+                                                </ScrollViewer>
+                                            </Border>
+                                        </DockPanel>
+                                        <DockPanel LastChildFill="True" DockPanel.Dock="Left">
+                                            <Border DockPanel.Dock="Right" BorderThickness="1,1,0,1">
+                                                <DockPanel LastChildFill="True">
+                                                    <local:UtilCtrl_ThisMapTileInformation x:Name="ThisMapLowTile_UtilCtrl_ThisMapTileInformation"  DockPanel.Dock="Top" />
+                                                    <local:UtilCtrl_ThisMapTileInformation x:Name="ThisMapHighTile_UtilCtrl_ThisMapTileInformation" DockPanel.Dock="Top" />
                                                     <ScrollViewer Background="MistyRose">
                                                         <Border BorderThickness="0, 0, 1, 0">
-                                                            <DockPanel x:Name="MapTilesList_DockPanel" LastChildFill="False" MouseDown="MapTilesList_DockPanel_MouseDown">
+                                                            <DockPanel x:Name="MapEventList_DockPanel" LastChildFill="False" MouseDown="MapTilesList_DockPanel_MouseDown">
 
                                                             </DockPanel>
                                                         </Border>
                                                     </ScrollViewer>
-                                                </Border>
-                                            </DockPanel>
-                                        </DockPanel>
-                                        <DockPanel x:Name="MapViewportBox_DockPanel" LastChildFill="True" DockPanel.Dock="Left">
-                                            <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
-                                                <ScrollViewer x:Name="MapViewport_ScrollViewer" Background="Black" HorizontalScrollBarVisibility="Visible">
-                                                    <Canvas x:Name="MapViewport_Canvas" MouseMove="MapViewport_Moving_Image_MouseMove" MouseDown="MapViewport_Canvas_MouseDown">
-                                                        <Image x:Name="MapViewport_Selected_Image"                   Panel.ZIndex="6" IsEnabled="False" />
-                                                        <Image x:Name="MapViewport_Active_Image"                     Panel.ZIndex="5" IsEnabled="False" />
-                                                        <Image x:Name="MapViewport_Event_Image"                      Panel.ZIndex="4" Visibility="Collapsed" />
-                                                        <Image x:Name="MapViewport_Obstacle_Image"                   Panel.ZIndex="3" Visibility="Collapsed" />
-                                                        <Image x:Name="MapViewport_EventTileSpiritAndMaskTile_Image" Panel.ZIndex="2" Visibility="Collapsed" />
-                                                        <Image x:Name="MapViewport_High_Image"                       Panel.ZIndex="1" Visibility="Collapsed" />
-                                                        <Image x:Name="MapViewport_Low_Image"                        Panel.ZIndex="0" Visibility="Collapsed" />
-                                                    </Canvas>
-                                                </ScrollViewer>
+                                                </DockPanel>
                                             </Border>
-                                            <DockPanel x:Name="Tip_NotSelected_DockPanel" LastChildFill="True" Background="HotPink">
-                                                <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="36" Foreground="Thistle">
+                                            <DockPanel x:Name="MapViewportBox_DockPanel" LastChildFill="True" DockPanel.Dock="Right">
+                                                <Border x:Name="MapViewport_Border" BorderBrush="LightPink" BorderThickness="2" Visibility="Collapsed">
+                                                    <ScrollViewer x:Name="MapViewport_ScrollViewer" Background="Black" HorizontalScrollBarVisibility="Visible">
+                                                        <Canvas x:Name="MapViewport_Canvas" MouseMove="MapViewport_Moving_Image_MouseMove" MouseDown="MapViewport_Canvas_MouseDown">
+                                                            <Image x:Name="MapViewport_Selected_Image"                   Panel.ZIndex="6" IsEnabled="False" />
+                                                            <Image x:Name="MapViewport_Active_Image"                     Panel.ZIndex="5" IsEnabled="False" />
+                                                            <Image x:Name="MapViewport_Event_Image"                      Panel.ZIndex="4" Visibility="Collapsed" />
+                                                            <Image x:Name="MapViewport_Obstacle_Image"                   Panel.ZIndex="3" Visibility="Collapsed" />
+                                                            <Image x:Name="MapViewport_EventTileSpiritAndMaskTile_Image" Panel.ZIndex="2" Visibility="Collapsed" />
+                                                            <Image x:Name="MapViewport_High_Image"                       Panel.ZIndex="1" Visibility="Collapsed" />
+                                                            <Image x:Name="MapViewport_Low_Image"                        Panel.ZIndex="0" Visibility="Collapsed" />
+                                                        </Canvas>
+                                                    </ScrollViewer>
+                                                </Border>
+                                                <DockPanel x:Name="Tip_NotSelected_DockPanel" LastChildFill="True" Background="HotPink">
+                                                    <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="36" Foreground="Thistle">
                                                     (lll￢ω￢)......
                                                     <LineBreak />
                                                     啊哈...您还未选择任何场景呦～
-                                                </TextBlock>
+                                                    </TextBlock>
+                                                </DockPanel>
                                             </DockPanel>
                                         </DockPanel>
                                     </DockPanel>

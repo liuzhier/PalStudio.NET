@@ -10,6 +10,8 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Ink;
 using System.Runtime.InteropServices;
+using System.Windows.Input;
+using System.Reflection;
 
 using PalVideo;
 
@@ -25,10 +27,10 @@ using DWORD     = System.UInt32;
 using SQWORD    = System.Int64;
 using QWORD     = System.UInt64;
 
-using PAL_POS   = System.UInt32;
-
 using LPSTR     = System.String;
 using FILE      = System.IO.File;
+
+using PAL_POS = System.UInt32;
 using PAL_Rect  = System.Windows.Int32Rect;
 
 using PalGlobal;
@@ -40,8 +42,6 @@ using static PalCommon.Pal_Common;
 using static PalCfg.Pal_Cfg;
 using static PalConfig.Pal_Config;
 using static PalResources.Pal_Resources;
-using System.Windows.Input;
-using System.Reflection;
 
 namespace PalMap
 {
@@ -50,10 +50,10 @@ namespace PalMap
         public class Pal_Map_Tile
         {
             public BOOL fIsNoPassBlock  = FALSE;
-            public WORD LowTile_Num     = 0;
-            public BYTE LowTile_Layer   = 0;
-            public WORD HighTile_Num    = 0;
-            public BYTE HighTile_Layer  = 0;
+            public WORD LowTile_Num;
+            public BYTE LowTile_Layer;
+            public WORD HighTile_Num;
+            public BYTE HighTile_Layer;
         }
 
         public enum MapDrawingStep
@@ -67,15 +67,25 @@ namespace PalMap
 
         public enum MapTileCursorColorType
         {
+            None,
             Active,
             Selected,
             Obstacle,
             Event,
         }
 
+        public enum MapLayerType
+        {
+            LowTile,
+            HighTile,
+            NoPass,
+            Event,
+        }
+
         public static readonly BYTE[,] mc_byMapTileCursorColor =
         {
             // A     R     G     B
+            { 0x00, 0x00, 0x00, 0x00 }, // 空
             { 0xFF, 0x00, 0xFF, 0x00 }, // 活动
             { 0xFF, 0x00, 0x00, 0xFF }, // 选中
             { 0xFF, 0xFF, 0x00, 0x00 }, // 障碍
@@ -84,26 +94,26 @@ namespace PalMap
 
         public static readonly DWORD[,] mc_dwMapTileCursor = {
             // #00FF00     #0000FF     #FF0000     #00FFFF
-            // 列1：活动   列2：选中   列3：障碍   列4：事件
-            { 0x0003C000, 0x0003C000, 0x0003C000, 0x0003C000 },
-            { 0x000C3000, 0x000DB000, 0x000C3000, 0x000C3000 },
-            { 0x00300C00, 0x00318C00, 0x00300C00, 0x00300C00 },
-            { 0x00C00300, 0x00C18300, 0x00C00300, 0x00C00300 },
-            { 0x030000C0, 0x030180C0, 0x030000C0, 0x030000C0 },
-            { 0x0C000030, 0x0C000030, 0x0C000030, 0x0C018030 },
-            { 0x3000000C, 0x3000000C, 0x3000000C, 0x3001800C },
-            { 0xC0000003, 0xC0000003, 0xC30000C3, 0xC003C003 },
-            { 0x3000000C, 0x3000000C, 0x3000000C, 0x3001800C },
-            { 0x0C000030, 0x0C000030, 0x0C000030, 0x0C018030 },
-            { 0x030000C0, 0x030180C0, 0x030000C0, 0x030000C0 },
-            { 0x00C00300, 0x00C18300, 0x00C00300, 0x00C00300 },
-            { 0x00300C00, 0x00318C00, 0x00300C00, 0x00300C00 },
-            { 0x000C3000, 0x000DB000, 0x000C3000, 0x000C3000 },
-            { 0x0003C000, 0x0003C000, 0x0003C000, 0x0003C000 },
+            // 列1：空     列2：活动   列3：选中   列4：障碍   列5：事件
+            { 0x0003C000, 0x0003C000, 0x0003C000, 0x0003C000, 0x0003C000 },
+            { 0x000FF000, 0x000C3000, 0x000DB000, 0x000C3000, 0x000C3000 },
+            { 0x003FFC00, 0x00300C00, 0x00318C00, 0x00300C00, 0x00300C00 },
+            { 0x00FFFF00, 0x00C00300, 0x00C18300, 0x00C00300, 0x00C00300 },
+            { 0x03FFFFC0, 0x030000C0, 0x030180C0, 0x030000C0, 0x030000C0 },
+            { 0x0FFFFFF0, 0x0C000030, 0x0C000030, 0x0C000030, 0x0C018030 },
+            { 0x3FFFFFFC, 0x3000000C, 0x3000000C, 0x3000000C, 0x3001800C },
+            { 0xFFFFFFFF, 0xC0000003, 0xC0000003, 0xC30000C3, 0xC003C003 },
+            { 0x3FFFFFFC, 0x3000000C, 0x3000000C, 0x3000000C, 0x3001800C },
+            { 0x0FFFFFF0, 0x0C000030, 0x0C000030, 0x0C000030, 0x0C018030 },
+            { 0x03FFFFC0, 0x030000C0, 0x030180C0, 0x030000C0, 0x030000C0 },
+            { 0x00FFFF00, 0x00C00300, 0x00C18300, 0x00C00300, 0x00C00300 },
+            { 0x003FFC00, 0x00300C00, 0x00318C00, 0x00300C00, 0x00300C00 },
+            { 0x000FF000, 0x000C3000, 0x000DB000, 0x000C3000, 0x000C3000 },
+            { 0x0003C000, 0x0003C000, 0x0003C000, 0x0003C000, 0x0003C000 },
         };
 
         //The width of the horizontal slice of Tile at different y-coordinates
-        private static WORD[,] SegmentTable = new WORD[16, 32]
+        public static WORD[,] SegmentTable = new WORD[16, 32]
         {
             { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, }, // 0
             { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, }, // 1
@@ -129,7 +139,7 @@ namespace PalMap
 
         public static readonly PAL_Rect m_MapRect       = new PAL_Rect(0, 0, mc_wMapWidth,      mc_wMapHeight);
         public static readonly PAL_Rect m_MapTileRect   = new PAL_Rect(0, 0, mc_wMapTileWidth,  mc_wMapTileHeight);
-        public static Surface           m_MapViewport_Low_Surface, m_MapViewport_High_Surface, m_MapViewport_EventTileSpiritAndMaskTile_Surface, m_MapViewport_Obstacle_Surface, m_MapViewport_Event_Surface, m_MapViewport_Active_Surface, m_MapViewport_Selected_Surface;
+        public static Surface           m_MapViewport_Low_Surface, m_MapViewport_High_Surface, m_MapViewport_EventTileSpiritAndMaskTile_Surface, m_MapViewport_None_Surface, m_MapViewport_Obstacle_Surface, m_MapViewport_Event_Surface, m_MapViewport_Active_Surface, m_MapViewport_Selected_Surface;
 
         public static List<Surface>     mc_sfMapTileCursor = new List<Surface>();
 
@@ -149,7 +159,7 @@ namespace PalMap
             //
             // 初始化所有的光标 <Surface>
             //
-            for (iCursorType = 0; iCursorType < mc_byMapTileCursorColor.GetLength(1); iCursorType++)
+            for (iCursorType = 0; iCursorType < mc_byMapTileCursorColor.GetLength(0); iCursorType++)
             {
                 surface = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
 
@@ -192,13 +202,14 @@ namespace PalMap
             //
             // 初始化 <Map Viewport Surface>
             //
-            m_MapViewport_Low_Surface                       = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
-            m_MapViewport_High_Surface                      = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
-            m_MapViewport_EventTileSpiritAndMaskTile_Surface = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
-            m_MapViewport_Obstacle_Surface                  = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
-            m_MapViewport_Event_Surface                     = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
-            m_MapViewport_Active_Surface                    = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
-            m_MapViewport_Selected_Surface                  = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
+            m_MapViewport_Low_Surface                           = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_High_Surface                          = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_EventTileSpiritAndMaskTile_Surface    = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_Obstacle_Surface                      = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_Event_Surface                         = new Surface(Pal_Map.mc_wMapWidth,     Pal_Map.mc_wMapHeight);
+            m_MapViewport_None_Surface                          = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
+            m_MapViewport_Active_Surface                        = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
+            m_MapViewport_Selected_Surface                      = new Surface(Pal_Map.mc_wMapTileWidth, Pal_Map.mc_wMapTileHeight);
 
             //
             // 初始化 <Map Tile Cursor> （主要是为了初始化它们的调色板）
@@ -208,10 +219,11 @@ namespace PalMap
             //
             // 重设 <额外信息视图> 调色板
             //
-            m_MapViewport_Active_Surface.palette    = mc_sfMapTileCursor[0].palette;
-            m_MapViewport_Selected_Surface.palette  = mc_sfMapTileCursor[1].palette;
-            m_MapViewport_Obstacle_Surface.palette  = mc_sfMapTileCursor[2].palette;
-            m_MapViewport_Event_Surface.palette     = mc_sfMapTileCursor[3].palette;
+            m_MapViewport_None_Surface.palette      = mc_sfMapTileCursor[0].palette;
+            m_MapViewport_Active_Surface.palette    = mc_sfMapTileCursor[1].palette;
+            m_MapViewport_Selected_Surface.palette  = mc_sfMapTileCursor[2].palette;
+            m_MapViewport_Obstacle_Surface.palette  = mc_sfMapTileCursor[3].palette;
+            m_MapViewport_Event_Surface.palette     = mc_sfMapTileCursor[4].palette;
         }
 
         public static void
@@ -707,18 +719,22 @@ namespace PalMap
             switch (mtccCursorType)
             {
                 case MapTileCursorColorType.Event:
-                    iCursorType = 3;
+                    iCursorType = 4;
                     break;
 
                 case MapTileCursorColorType.Obstacle:
-                    iCursorType = 2;
+                    iCursorType = 3;
                     break;
 
                 case MapTileCursorColorType.Selected:
-                    iCursorType = 1;
+                    iCursorType = 2;
                     break;
 
                 case MapTileCursorColorType.Active:
+                    iCursorType = 1;
+                    break;
+
+                case MapTileCursorColorType.None:
                 default:
                     iCursorType = 0;
                     break;
@@ -832,25 +848,25 @@ namespace PalMap
 
         public static PAL_POS
         PAL_XYH_TO_POS(
-            WORD        x,
-            WORD        y,
-            WORD        h
+            BYTE        x,
+            BYTE        y,
+            BYTE        h
         ) => PAL_XY(x * 32 + h * 16, y * 16 + h * 8);
 
         public static void
         PAL_POS_TO_XYH(
             PAL_POS     pos,
-        out WORD        x,
-        out WORD        y,
-        out WORD        h
+        out BYTE        x,
+        out BYTE        y,
+        out BYTE        h
         )
         {
             WORD Segment, SegmentX, SegmentY;
 
             if (((SHORT)PAL_X(pos)) < 0 || ((SHORT)PAL_Y(pos)) < 0)
             {
-                x   = 0xFFFF;
-                y   = 0xFFFF;
+                x   = 0xFF;
+                y   = 0xFF;
                 h   = 1;
 
                 return;
@@ -868,8 +884,8 @@ namespace PalMap
             {
                 if (((SHORT)(PAL_X(pos) - 16)) < 0 || ((SHORT)(PAL_Y(pos) - 8)) < 0)
                 {
-                    x = 0xFFFF;
-                    y = 0xFFFF;
+                    x = 0xFF;
+                    y = 0xFF;
                     h = 1;
 
                     return;
@@ -952,6 +968,33 @@ namespace PalMap
 
                     }
                     break;
+            }
+        }
+
+        public static void
+        PAL_MapTileCleanSpirit(
+            Surface     sfMapViewportSurface,
+            BYTE        wXB,
+            BYTE        wYB,
+            BYTE        wHB
+        )
+        {
+            INT         x, y, iPixelIndex;
+            PAL_POS     posMapTile;
+
+            posMapTile = PAL_XYH_TO_POS(wXB, wYB, wHB);
+
+            //
+            // 为指定的 <Map Viewport Surface> 清理指定位置的 <Map Tile Spirit>
+            //
+            for (y = 0; y < Pal_Map.mc_wMapTileHeight; y++)
+            {
+                for (x = 0; x < Pal_Map.mc_wMapTileWidth; x++)
+                {
+                    iPixelIndex = (PAL_Y(posMapTile) + y) * Pal_Map.mc_wMapWidth + x + PAL_X(posMapTile);
+
+                    if (Pal_Map.SegmentTable[y, x] == 0) sfMapViewportSurface.pixels[iPixelIndex] = 0xFF;
+                }
             }
         }
     }

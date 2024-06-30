@@ -426,7 +426,7 @@ tagEnd:
             Point           point, currentPoint;
             Thickness       margin;
             double          left, top, X, Y;
-            WORD            x, y, h;
+            BYTE            x, y, h;
             PAL_POS         posActiveCursor;
 
             //

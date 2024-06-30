@@ -73,6 +73,9 @@
     <Compile Include="PalUtil.cs" />
     <Compile Include="PalVideo.cs" />
     <Compile Include="PalYJ_1.cs" />
+    <Compile Include="UtilCtrl_ThisMapTileInformation.xaml.cs">
+      <DependentUpon>UtilCtrl_ThisMapTileInformation.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UtilCtrl_ToolsButton.xaml.cs">
       <DependentUpon>UtilCtrl_ToolsButton.xaml</DependentUpon>
     </Compile>
@@ -94,6 +97,10 @@
     <Compile Include="Win_SelectScene.xaml.cs">
       <DependentUpon>Win_SelectScene.xaml</DependentUpon>
     </Compile>
+    <Page Include="UtilCtrl_ThisMapTileInformation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UtilCtrl_ToolsButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -35,6 +35,7 @@ using static PalGlobal.Pal_File;
 using static PalConfig.Pal_Config;
 using static PalCommon.Pal_Common;
 using static PalUtil.Pal_Util;
+using PalMap;
 
 namespace PalVideo
 {
@@ -55,10 +56,10 @@ namespace PalVideo
 
         public
         Surface(
-            INT     iWidth,
-            INT     iHeight,
-            INT     iPaletteNum = 0,
-            BOOL    fNight      = FALSE
+            INT             iWidth,
+            INT             iHeight,
+            INT             iPaletteNum = 0,
+            BOOL            fNight      = FALSE
         )
         {
             ResetSurface(iWidth, iHeight, iPaletteNum, fNight);
@@ -66,10 +67,10 @@ namespace PalVideo
 
         public void
         ResetSurface(
-            INT     iWidth,
-            INT     iHeight,
-            INT     iPaletteNum = 0,
-            BOOL    fNight      = FALSE
+            INT             iWidth,
+            INT             iHeight,
+            INT             iPaletteNum = 0,
+            BOOL            fNight      = FALSE
         )
         {
             INT         i, j;
@@ -136,7 +137,7 @@ namespace PalVideo
 
         public Surface
         CleanSpirit(
-            BYTE        iColorIndex = 0
+            BYTE            iColorIndex = 0
         )
         {
             if (iColorIndex == 0)
@@ -163,8 +164,8 @@ namespace PalVideo
 
         public
         Pal_Video(
-            INT     iWidth,
-            INT     iHeight
+            INT             iWidth,
+            INT             iHeight
         )
         {
             m_Surface = new Surface(iWidth, iHeight);
@@ -173,12 +174,14 @@ namespace PalVideo
 
         public static void
         VIDEO_DrawSurfaceToImage(
-            Surface     surface,
-            Image       dest,
-            PAL_Rect    rect
+            Surface         surface,
+            Image           dest,
+            PAL_Rect        destRect,
+            BOOL            fIsSameSrcRect = FALSE
         )
         {
-            WriteableBitmap wbRenderer;
+            INT                 x, y, iPixelIndex;
+            WriteableBitmap     wbRenderer;
 
             if (dest.Source == NULL)
             {
@@ -196,12 +199,52 @@ namespace PalVideo
             //
             // 填充像素颜色
             //
-            wbRenderer.WritePixels(new PAL_Rect(rect.X, rect.Y, rect.Width, rect.Height), surface.pixels, surface.GetStride(), 0);
+            if (fIsSameSrcRect)
+            {
+                //
+                // 锁定 WriteableBitmap 的 BackBuffer
+                //
+                wbRenderer.Lock();
+
+                for (y = 0; y < destRect.Height; y++)
+                {
+                    for (x = 0; x < destRect.Width; x++)
+                    {
+                        iPixelIndex = (destRect.Y + y) * Pal_Map.mc_wMapWidth + x + destRect.X;
+
+                        if (Pal_Map.SegmentTable[y, x] == 0) ((BYTE*)wbRenderer.BackBuffer)[iPixelIndex] = surface.pixels[iPixelIndex];
+                   }
+                }
+
+                //
+                // 标记被修改的区域
+                //
+                wbRenderer.AddDirtyRect(destRect);
+
+                //
+                // 解锁 WriteableBitmap 的 BackBuffer
+                //
+                wbRenderer.Unlock();
+
+                //
+                // 更新Image控件的Source属性
+                // 由于 Update 方法可能不是在UI线程上调用的
+                // 所以需要使用 Dispatcher 来确保UI线程更新
+                //
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    dest.Source = wbRenderer;
+                });
+            }
+            else
+            {
+                wbRenderer.WritePixels(new PAL_Rect(destRect.X, destRect.Y, destRect.Width, destRect.Height), surface.pixels, surface.GetStride(), 0);
+            }
 
             //
-            // 刷新Image控件以显示更新后的像素（废弃）
+            // 刷新 Image 控件以显示更新后的像素（废弃）
             //
-            //dest.InvalidateVisual();
+            dest.InvalidateVisual();
         }
 
         public static void

@@ -1,0 +1,28 @@
+﻿<UserControl x:Class="PalStudio.NET.UtilCtrl_ThisMapTileInformation"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PalStudio.NET"
+             mc:Ignorable="d" 
+             d:DesignHeight="NaN" d:DesignWidth="NaN">
+    <Grid>
+        <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" Width="228">
+            <DockPanel LastChildFill="True" Background="LightPink" Height="75">
+            <DockPanel DockPanel.Dock="Right" LastChildFill="True" Width="160" Background="Black">
+                <Image x:Name="ThisMapTile_Image" Width="NaN" Height="75" />
+            </DockPanel>
+            <Border DockPanel.Dock="Right" BorderThickness="0, 0, 1, 0">
+                <DockPanel LastChildFill="True">
+                    <Label x:Name="ThisMapTileIndex_Label" DockPanel.Dock="Top" Foreground="Crimson" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        未选择
+                    </Label>
+                    <TextBox x:Name="ThisMapTileIndex_TextBox" DockPanel.Dock="Top" Height="30" FontSize="20" Foreground="Crimson" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="ThisMapTileIndex_TextBox_TextChanged" LostFocus="ThisMapTileIndex_TextBox_LostFocus">
+
+                    </TextBox>
+                </DockPanel>
+            </Border>
+        </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

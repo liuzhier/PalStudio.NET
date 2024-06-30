@@ -76,6 +76,7 @@ namespace PalStudio.NET
         private static BOOL             m_fCanClose = TRUE; 
         private static INT              m_iThisMapTile = -1, m_iMapViewportScale = 200;
         private static WORD             m_wActivePosX = 0, m_wActivePosY = 0, m_wSelectPosX = 0, m_wSelectPosY = 0;
+        private static BYTE             m_byActivePosXB, m_byActivePosYB, m_byActivePosHB, m_bySelectPosXB, m_bySelectPosYB, m_bySelectPosHB;
         private static double           m_douViewportWidth = 0, m_douViewportHeight = 0;
         private static ScaleTransform   m_stMapViewport_ScaleTransform = new ScaleTransform();
         private static MapDrawingStep   m_EventTileBlockAndMaskTileBlockDisplayStatus = MapDrawingStep.EventSpirit | MapDrawingStep.MaskTile;
@@ -93,7 +94,7 @@ namespace PalStudio.NET
         {
             //
             // 判断是否允许关闭窗口
-            // 返回 <TRUE> 表示可以关闭
+            // 返回 <TRUE>  表示可以关闭
             // 返回 <FALSE> 表示不能关闭
             //
             return m_fCanClose;
@@ -101,7 +102,6 @@ namespace PalStudio.NET
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            // 在这里添加您的关闭逻辑
             if (!GetCanClose())
             {
                 //
@@ -128,7 +128,7 @@ namespace PalStudio.NET
             //
             // 进入 Pal Studio 配置读取
             //
-            main((string[])NULL);
+            main((LPSTR[])NULL);
 
             //
             // 初始化 <Map Viewport Surface>
@@ -158,10 +158,33 @@ namespace PalStudio.NET
             }
 
             //
-            // 开始将 <Surface> 绘制到 <Image>
+            // 预初始化各个组件
             //
-            //VIDEO_DrawSurfaceToImage(mc_sfMapTileCursor[0], MapViewport_Active_Image,   Pal_Map.m_MapTileRect);
-            //VIDEO_DrawSurfaceToImage(mc_sfMapTileCursor[1], MapViewport_Selected_Image, Pal_Map.m_MapTileRect);
+            {
+                //
+                // 为 <用户当前选择的 Map Tile> 的视图绑定 <Map Tiles List>
+                // 并进行双向绑定
+                //
+                ThisMapTile_UtilCtrl_ThisMapTileInformation.BindMapTilesList(MapTilesList_DockPanel);
+                ThisMapTile_UtilCtrl_ThisMapTileInformation.SetBindingBoth(TRUE);
+
+                //
+                // 为 <当前地图选中的 Map Low Tile> 的视图绑定 <Map Tiles List>
+                //
+                ThisMapLowTile_UtilCtrl_ThisMapTileInformation.BindMapTilesList(MapTilesList_DockPanel);
+                ThisMapHighTile_UtilCtrl_ThisMapTileInformation.BindMapTilesList(MapTilesList_DockPanel);
+
+                //
+                // 绑定事件 <修改后更新 Map Viewport Image>
+                //
+                ThisMapLowTile_UtilCtrl_ThisMapTileInformation.BindMapViewportImage(MapLayerType.LowTile, MapViewport_Low_Image, m_MapViewport_Low_Surface);
+                ThisMapHighTile_UtilCtrl_ThisMapTileInformation.BindMapViewportImage(MapLayerType.HighTile, MapViewport_High_Image, m_MapViewport_High_Surface);
+
+                //
+                // 允许用户将 <当前地图选中的 Map High Tile> 设置为 <空 / -1>
+                //
+                ThisMapHighTile_UtilCtrl_ThisMapTileInformation.SetDefaultMapTile(-1);
+            }
         }
 
         private void Win_ToolsButton_Loaded(object sender, RoutedEventArgs e)
@@ -338,83 +361,12 @@ namespace PalStudio.NET
             m_iThisMapTile = (INT)MapTilesList_DockPanel.Tag;
 
             //
-            // 更新当前 <Map Tile> 编号
+            // 展示当前选中的 <Map Tile> 的信息
             //
-            ThisMapTileIndex_Label.Content  = $"[0x{m_iThisMapTile:X4}]";
-            ThisMapTileIndex_TextBox.Text   = m_iThisMapTile.ToString();
-
-            //
-            // 更新当前 <Map Tile> 图像
-            //
-            ThisMapTile_Image.Source = ((UtilCtrl_MapTileList_Item)MapTilesList_DockPanel.Children[m_iThisMapTile]).GetMapTileImage().Source;
+            ThisMapTile_UtilCtrl_ThisMapTileInformation.SetThisMapTile(m_iThisMapTile);
         }
 
-        private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e) => UTIL_TextBox_Num_PreviewTextInput(e);
-
-        private void ThisMapTileIndex_TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            INT     iThisMapTile;
-
-            //
-            // 判断用户输入的数值是否合法
-            //
-            if ((iThisMapTile = UTIL_TextBoxTextIsMatch(ThisMapTileIndex_TextBox, m_iThisMapTile)) == PALSN_ERROR) return;
-
-            //
-            // 数值未变动，退出函数
-            //
-            if (iThisMapTile == m_iThisMapTile) return;
-
-            //
-            // 最大输入值不得超过 <Maximum Map Tiles Index>
-            //
-            ThisMapTileIndex_TextBox.Text = (m_iThisMapTile = Math.Min(iThisMapTile, MapTilesList_DockPanel.Children.Count - 1)).ToString();
-
-            //
-            // 模拟 <UtilCtrl_MapTileList_Item> 点击
-            //
-            ((UtilCtrl_MapTileList_Item)MapTilesList_DockPanel.Children[m_iThisMapTile]).SimulateMouseDown();
-
-            //
-            // 更新当前 <Map Tile> 编号
-            //
-            MapTilesList_DockPanel_MouseDown(NULL, (MouseButtonEventArgs)NULL);
-        }
-
-        private void ThisMapTileIndex_TextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            INT         iThisMapTile;
-            TextBox     textBox = sender as TextBox;
-
-            if (textBox != NULL)
-            {
-                //
-                // 判断用户输入的数值是否合法
-                //
-                if ((iThisMapTile = UTIL_TextBoxTextIsMatch(textBox, m_iThisMapTile)) == PALSN_ERROR)
-                {
-                    //
-                    // 用户输入了错误的百分值
-                    //
-                    goto tagEnd;
-                }
-
-                if (iThisMapTile >= 0)
-                {
-                    //
-                    // 用户输入百分值值正确
-                    // 直接退出函数
-                    //
-                    return;
-                }
-
-tagEnd:
-                //
-                // 撤回到上次输入的数值
-                //
-                textBox.Text = m_iThisMapTile.ToString();
-            }
-        }
+        private void MapViewportScale_TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e) => UTIL_TextBox_Num_PreviewTextInput(e);
 
         private void MapViewportScale_TextBox_TextChanged(object sender, TextChangedEventArgs e) => UTIL_MapViewportScale_TextBox_TextChanged(sender, ref m_iMapViewportScale, MapViewport_Canvas, m_stMapViewport_ScaleTransform);
 
@@ -424,8 +376,7 @@ tagEnd:
         {
             Point           point, currentPoint;
             Thickness       margin;
-            double          left, top, X, Y;
-            WORD            x, y, h;
+            double          left, top;
             PAL_POS         posActiveCursor;
 
             //
@@ -447,7 +398,7 @@ tagEnd:
             //
             // 获取当前鼠标位置
             //
-            currentPoint    = e.GetPosition(null);
+            currentPoint = e.GetPosition(null);
 
             //
             // 获取 <Scene> 缩放前的坐标
@@ -458,8 +409,8 @@ tagEnd:
             //
             // <点坐标> 转 <块坐标>
             //
-            Pal_Map.PAL_POS_TO_XYH(PAL_XY(m_wActivePosX, m_wActivePosY), out x, out y, out h);
-            posActiveCursor = Pal_Map.PAL_XYH_TO_POS(x, y, h);
+            Pal_Map.PAL_POS_TO_XYH(PAL_XY(m_wActivePosX, m_wActivePosY), out m_byActivePosXB, out m_byActivePosYB, out m_byActivePosHB);
+            posActiveCursor = Pal_Map.PAL_XYH_TO_POS(m_byActivePosXB, m_byActivePosYB, m_byActivePosHB);
 
             m_wActivePosX = PAL_X(posActiveCursor);
             m_wActivePosY = PAL_Y(posActiveCursor);
@@ -467,9 +418,9 @@ tagEnd:
             //
             // 将 <块坐标> 显示在状态栏
             //
-            ActiveCursorPosXB_TextBlock.Text    = $"{x:D}({x:X})";
-            ActiveCursorPosYB_TextBlock.Text    = $"{y:D}({y:X})";
-            ActiveCursorPosHB_TextBlock.Text    = h.ToString();
+            ActiveCursorPosXB_TextBlock.Text    = $"{m_byActivePosXB:D}({m_byActivePosXB:X})";
+            ActiveCursorPosYB_TextBlock.Text    = $"{m_byActivePosYB:D}({m_byActivePosYB:X})";
+            ActiveCursorPosHB_TextBlock.Text    = m_byActivePosHB.ToString();
             ActiveCursorPosX_TextBlock.Text     = $"{m_wActivePosX:D}({m_wActivePosX:X})";
             ActiveCursorPosY_TextBlock.Text     = $"{m_wActivePosY:D}({m_wActivePosY:X})";
 
@@ -481,16 +432,44 @@ tagEnd:
 
         private void MapViewport_Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            Pal_Map_Tile    pmtThisTiles;
+
             //
             // 备份 <Select Cursor> 坐标
             //
-            m_wSelectPosX = m_wActivePosX;
-            m_wSelectPosY = m_wActivePosY;
+            m_wSelectPosX   = m_wActivePosX;
+            m_wSelectPosY   = m_wActivePosY;
+            m_bySelectPosXB  = m_byActivePosXB;
+            m_bySelectPosYB  = m_byActivePosYB;
+            m_bySelectPosHB  = m_byActivePosHB;
+
+            //
+            // 获取当前选中的 <Map Tile Block>
+            //
+            try
+            {
+                pmtThisTiles = Pal_Map.Tiles[m_bySelectPosYB, m_bySelectPosXB, m_bySelectPosHB];
+            }
+            catch (IndexOutOfRangeException)
+            {
+                //
+                // 此坐标不在地图实际范围内，直接取消选择
+                //
+                return;
+            }
 
             //
             // 更新 <Active Cursor> 的位置
             //
             MapViewport_Selected_Image.Margin = new Thickness(m_wSelectPosX * (m_iMapViewportScale / 100.00), m_wSelectPosY * (m_iMapViewportScale / 100.00), 0, 0);
+
+            //
+            // 展示当前选中的 <Map Tile>
+            //
+            ThisMapLowTile_UtilCtrl_ThisMapTileInformation.SetPoxXYH(m_bySelectPosXB, m_bySelectPosYB, m_bySelectPosHB);
+            ThisMapHighTile_UtilCtrl_ThisMapTileInformation.SetPoxXYH(m_bySelectPosXB, m_bySelectPosYB, m_bySelectPosHB);
+            ThisMapLowTile_UtilCtrl_ThisMapTileInformation.SetThisMapTile(pmtThisTiles.LowTile_Num);
+            ThisMapHighTile_UtilCtrl_ThisMapTileInformation.SetThisMapTile((SHORT)pmtThisTiles.HighTile_Num);
         }
 
         private void MapEditMode_Select_Button_MouseDown(object sender, MouseButtonEventArgs e)
@@ -600,21 +579,33 @@ tagEnd:
 
         private void MapLayerMode_LowTile_Button_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            //
+            // 设置当前图层编辑模式为 <Low Tile>
+            //
             me_MapLayerMode = MapLayerMode.LowTile;
         }
 
         private void MapLayerMode_HighTile_Button_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            //
+            // 设置当前图层编辑模式为 <High Tile>
+            //
             me_MapLayerMode = MapLayerMode.HighTile;
         }
 
         private void MapLayerMode_NoPass_Button_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            //
+            // 设置当前图层编辑模式为 <Event Tile>
+            //
             me_MapLayerMode = MapLayerMode.NoPass;
         }
 
         private void MapLayerMode_Event_Button_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            //
+            // 设置当前图层编辑模式为 <Select/Edit/Delect Element Mode>
+            //
             me_MapLayerMode = MapLayerMode.Event;
         }
 

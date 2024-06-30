@@ -36,7 +36,7 @@ namespace PalMain
 
         public static void
         main(
-            string[]    args
+            LPSTR[]    args
         )
         {
             //
